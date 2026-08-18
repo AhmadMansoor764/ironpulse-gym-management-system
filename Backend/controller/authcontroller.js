@@ -52,14 +52,14 @@ export const register = async (req, res) => {
       message: "User created successfully",
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      success: false,
-      message: "Something went wrong",
-    });
-  }
-};
+  console.error("REGISTER ERROR:", error);
 
+  return res.status(500).json({
+    success: false,
+    message: error.message || "Something went wrong",
+  });
+}
+  
 export const login = async (req, res) => {
   const { email, password } = req.body;
 
