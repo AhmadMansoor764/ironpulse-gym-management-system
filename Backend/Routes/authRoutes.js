@@ -3,7 +3,7 @@ import {
   login,
   getcurrentuser,
   logout,
-} from "../Controller/authController.js";
+} from "../controller/authcontroller.js";
 import express from "express";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 
