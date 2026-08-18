@@ -4,5 +4,6 @@ node_modules/
 .env
 .env.*
 !.env.example
+generated/
 
 npm-debug.log*
