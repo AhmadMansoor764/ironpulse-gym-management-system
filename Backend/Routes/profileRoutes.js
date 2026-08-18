@@ -4,7 +4,7 @@ import {
   getprofile,
   uploadProfileImage,
   changePassword,
-} from "../Controller/profileController.js";
+} from "../controller/profilecontroller.js";
 import { authMiddleware } from "../middleware/authMiddleware.js";
 import { upload } from "../middleware/uploadMiddleware.js";
 
