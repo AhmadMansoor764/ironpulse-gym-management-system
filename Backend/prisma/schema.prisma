@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model trainer {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  phone      String?
+  image      String?
+  about      String?
+  gymName    String?
+  gymAddress String?
+
+  members  member[]
+  expenses expense[]
+}
+
+model member {
+  id            Int      @id @default(autoincrement())
+  name          String
+  phone         String
+  email         String?  @unique
+  monthlyFee    Decimal
+  startDate     DateTime @default(now())
+  internalNotes String?
+
+  trainerId Int
+  trainer   trainer @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+
+  payments payment[]
+
+  @@index([trainerId])
+}
+
+model payment {
+  id           Int      @id @default(autoincrement())
+  amount       Decimal
+  paymentMonth DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  memberId Int
+  member   member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([memberId, paymentMonth])
+  @@index([memberId])
+  @@index([paymentMonth])
+}
+
+model expense {
+  id          Int      @id @default(autoincrement())
+  description String
+  category    String
+  amount      Decimal
+  expenseDate DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  trainerId Int
+  trainer   trainer @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+
+ @@index([trainerId, expenseDate])
+}
