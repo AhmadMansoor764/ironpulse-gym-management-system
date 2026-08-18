@@ -6,8 +6,8 @@ import authRoutes from "./Routes/authRoutes.js";
 import profileRoutes from "./Routes/profileRoutes.js";
 import memberRoutes from "./Routes/memberRoutes.js";
 import paymentRoutes from "./Routes/paymentRoutes.js";
-import expenseRoutes from "./routes/expenseRoutes.js";
-import dashboardRoutes from "./routes/dashboardRoutes.js";
+import expenseRoutes from "./Routes/expenseRoutes.js";
+import dashboardRoutes from "./Routes/dashboardRoutes.js";
 
 dotenv.config();
 
