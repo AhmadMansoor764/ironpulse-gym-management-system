@@ -18,7 +18,7 @@ const PORT = process.env.PORT || 5000;
 //middlewares i do have them for gym system
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "https://omarzai-club.netlify.app"],
     credentials: true,
   }),
 );
