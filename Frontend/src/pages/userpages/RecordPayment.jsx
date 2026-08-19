@@ -11,9 +11,14 @@ import {
 
 import { FaMoneyBillWave, FaUniversity } from "react-icons/fa";
 
+import { useLanguage } from "../context/LanguageContext";
+
 function RecordPayment() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+
+  const { t } = useLanguage();
+  const recordPaymentT = t.recordPaymentPage;
 
   // =========================================================
   // MEMBER
@@ -75,18 +80,18 @@ function RecordPayment() {
   const paymentMethods = [
     {
       id: "cash",
-      label: "CASH",
+      label: recordPaymentT.cash,
       icon: FaMoneyBillWave,
       selected: true,
     },
     {
       id: "card",
-      label: "CARD",
+      label: recordPaymentT.card,
       icon: FiCreditCard,
     },
     {
       id: "transfer",
-      label: "TRANSFER",
+      label: recordPaymentT.transfer,
       icon: FaUniversity,
     },
   ];
@@ -95,7 +100,9 @@ function RecordPayment() {
   // CURRENT BILLING PERIOD
   // =========================================================
 
-  const billingPeriod = `${selectedMonth} ${selectedYear}`;
+  const billingPeriod = `${
+    recordPaymentT.months[selectedMonth]
+  } ${selectedYear}`;
 
   // =========================================================
   // CANCEL
@@ -116,14 +123,12 @@ function RecordPayment() {
     setError("");
 
     if (!memberId) {
-      setError(
-        "Member information is missing. Please go back and select the member again.",
-      );
+      setError(recordPaymentT.memberInformationMissing);
       return;
     }
 
     if (!amount || Number(amount) <= 0) {
-      setError("Please enter a valid payment amount.");
+      setError(recordPaymentT.validPaymentAmount);
       return;
     }
 
@@ -153,16 +158,14 @@ function RecordPayment() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Unable to add payment");
+        throw new Error(data.message || recordPaymentT.unableToAddPayment);
       }
 
       navigate(-1);
     } catch (error) {
       console.error("Payment error:", error);
 
-      setError(
-        error.message || "Something went wrong while recording the payment.",
-      );
+      setError(error.message || recordPaymentT.paymentRecordingError);
     } finally {
       setLoading(false);
     }
@@ -201,7 +204,7 @@ function RecordPayment() {
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.message || "Unable to get member");
+          throw new Error(data.message || recordPaymentT.unableToAddPayment);
         }
 
         setMember(data.member);
@@ -287,7 +290,7 @@ function RecordPayment() {
                   lg:text-[14px]
                 "
               >
-                CANCEL
+                {recordPaymentT.cancel}
               </span>
             </motion.button>
           </div>
@@ -338,9 +341,9 @@ function RecordPayment() {
             lg:pt-8
           "
         >
-          {/* =====================================================
+          {/* =================================================
               PAYMENT CARD
-          ====================================================== */}
+          ================================================== */}
 
           <motion.section
             initial={{
@@ -408,7 +411,7 @@ function RecordPayment() {
                   lg:text-[32px]
                 "
               >
-                Record Payment
+                {recordPaymentT.recordPayment}
               </h2>
 
               <p
@@ -423,9 +426,9 @@ function RecordPayment() {
                   lg:text-[15px]
                 "
               >
-                Processing manual transaction for{" "}
+                {recordPaymentT.processingManualTransaction}{" "}
                 <span className="font-semibold text-[#caff00]">
-                  {member?.name || "member"}
+                  {member?.name || recordPaymentT.member}
                 </span>
                 .
               </p>
@@ -451,7 +454,7 @@ function RecordPayment() {
                   sm:text-[14px]
                 "
               >
-                BILLING PERIOD
+                {recordPaymentT.billingPeriod}
               </label>
 
               <div className="relative mt-2.5">
@@ -551,7 +554,7 @@ function RecordPayment() {
                             text-[#77796a]
                           "
                         >
-                          YEAR
+                          {recordPaymentT.year}
                         </p>
 
                         <div
@@ -601,7 +604,7 @@ function RecordPayment() {
                             text-[#77796a]
                           "
                         >
-                          MONTH
+                          {recordPaymentT.month}
                         </p>
 
                         <div
@@ -638,7 +641,7 @@ function RecordPayment() {
                                 }
                               `}
                             >
-                              {month}
+                              {recordPaymentT.months[month]}
                             </button>
                           ))}
                         </div>
@@ -665,7 +668,7 @@ function RecordPayment() {
                           hover:bg-[#444444]
                         "
                       >
-                        DONE
+                        {recordPaymentT.done}
                       </button>
                     </motion.div>
                   )}
@@ -689,7 +692,7 @@ function RecordPayment() {
                   sm:text-[14px]
                 "
               >
-                AMOUNT COLLECTED
+                {recordPaymentT.amountCollected}
               </label>
 
               <div className="relative mt-2.5">
@@ -748,7 +751,7 @@ function RecordPayment() {
                   sm:text-[13px]
                 "
               >
-                Standard monthly fee applies.
+                {recordPaymentT.standardMonthlyFee}
               </p>
             </div>
 
@@ -768,7 +771,7 @@ function RecordPayment() {
                   sm:text-[14px]
                 "
               >
-                PAYMENT METHOD
+                {recordPaymentT.paymentMethod}
               </label>
 
               <div
@@ -927,7 +930,7 @@ function RecordPayment() {
                   sm:text-[14px]
                 "
               >
-                CANCEL
+                {recordPaymentT.cancel}
               </motion.button>
 
               {/* CONFIRM */}
@@ -996,7 +999,9 @@ function RecordPayment() {
                       strokeWidth={2.5}
                     />
 
-                    <span className="text-center">CONFIRM PAYMENT</span>
+                    <span className="text-center">
+                      {recordPaymentT.confirmPayment}
+                    </span>
                   </>
                 )}
               </motion.button>

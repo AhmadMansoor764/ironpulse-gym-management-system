@@ -7,7 +7,13 @@ import {
   FaArrowUp,
 } from "react-icons/fa";
 
+import { useLanguage } from "../context/LanguageContext";
+
 const Dashboard = () => {
+  const { t } = useLanguage();
+
+  const dashboardT = t.dashboardPage;
+
   const [period, setPeriod] = useState("Last 6 Months");
 
   const [dashboard, setDashboard] = useState({
@@ -215,7 +221,9 @@ const Dashboard = () => {
   if (loading) {
     return (
       <div className="mx-auto w-full max-w-[1180px] px-5 pt-7 lg:px-[38px]">
-        <h1 className="text-[32px] font-bold tracking-[-1px]">Overview</h1>
+        <h1 className="text-[32px] font-bold tracking-[-1px]">
+          {dashboardT.overview}
+        </h1>
 
         <div className="mt-7 grid grid-cols-2 gap-3 lg:grid-cols-4">
           {[1, 2, 3, 4].map((item) => (
@@ -241,7 +249,7 @@ const Dashboard = () => {
 
       <div className="mb-7">
         <h1 className="text-[32px] font-bold tracking-[-1px] text-[#f4f4f4]">
-          Overview
+          {dashboardT.overview}
         </h1>
       </div>
 
@@ -266,7 +274,7 @@ const Dashboard = () => {
         >
           <div className="flex items-start justify-between gap-2">
             <p className="text-[14px] font-semibold uppercase tracking-[0.5px] text-[#d4d6b7]">
-              Total Members
+              {dashboardT.totalMembers}
             </p>
 
             <FaUsers className="text-[19px] text-[#c6ff00]" />
@@ -278,7 +286,7 @@ const Dashboard = () => {
 
           <div className="mt-4 flex items-center gap-1 text-[14px] font-semibold text-[#c6ff00]">
             <FaArrowUp />
-            Active members
+            {dashboardT.activeMembers}
           </div>
         </div>
 
@@ -297,7 +305,7 @@ const Dashboard = () => {
         >
           <div className="flex items-start justify-between">
             <p className="text-[14px] font-semibold uppercase tracking-[0.5px] text-[#d4d6b7]">
-              Paid This Month
+              {dashboardT.paidThisMonth}
             </p>
 
             <FaCheckCircle className="text-[19px] text-[#c6ff00]" />
@@ -317,7 +325,7 @@ const Dashboard = () => {
           </div>
 
           <p className="mt-2 text-[12px] text-[#999]">
-            {paymentPercentage.toFixed(0)}% of members paid
+            {paymentPercentage.toFixed(0)}% {dashboardT.ofMembersPaid}
           </p>
         </div>
 
@@ -336,7 +344,7 @@ const Dashboard = () => {
         >
           <div className="flex items-start justify-between">
             <p className="text-[14px] font-semibold uppercase tracking-[0.5px] text-[#d4d6b7]">
-              Unpaid
+              {dashboardT.unpaid}
             </p>
 
             <FaExclamationTriangle className="text-[19px] text-[#ffaaa5]" />
@@ -347,7 +355,7 @@ const Dashboard = () => {
           </p>
 
           <span className="mt-4 inline-flex rounded-full bg-[#342a2a] px-3 py-1 text-[13px] font-semibold text-[#ffaaa5]">
-            Action Required
+            {dashboardT.actionRequired}
           </span>
         </div>
 
@@ -366,7 +374,7 @@ const Dashboard = () => {
         >
           <div className="flex items-start justify-between">
             <p className="text-[14px] font-semibold uppercase tracking-[0.5px] text-[#d4d6b7]">
-              Monthly Revenue
+              {dashboardT.monthlyRevenue}
             </p>
 
             <FaMoneyBillWave className="text-[19px] text-[#c6ff00]" />
@@ -377,7 +385,7 @@ const Dashboard = () => {
           </p>
 
           <p className="mt-4 text-[14px] text-[#d4d6b7]">
-            Expenses: {formatMoney(stats.monthlyExpenses)}
+            {dashboardT.expenses}: {formatMoney(stats.monthlyExpenses)}
           </p>
         </div>
       </section>
@@ -400,10 +408,10 @@ const Dashboard = () => {
       >
         <div className="flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-[23px] font-bold">Revenue Trend</h2>
+            <h2 className="text-[23px] font-bold">{dashboardT.revenueTrend}</h2>
 
             <p className="mt-1 text-[13px] text-[#999]">
-              Actual member payments
+              {dashboardT.actualMemberPayments}
             </p>
           </div>
 
@@ -422,10 +430,10 @@ const Dashboard = () => {
               outline-none
             "
           >
-            <option>This Month</option>
-            <option>Last Month</option>
-            <option>Last 3 Months</option>
-            <option>Last 6 Months</option>
+            <option value="This Month">{dashboardT.thisMonth}</option>
+            <option value="Last Month">{dashboardT.lastMonth}</option>
+            <option value="Last 3 Months">{dashboardT.last3Months}</option>
+            <option value="Last 6 Months">{dashboardT.last6Months}</option>
           </select>
         </div>
 
@@ -475,7 +483,7 @@ const Dashboard = () => {
 
           {chartData.length === 0 && (
             <div className="absolute inset-0 flex items-center justify-center text-[14px] text-[#777]">
-              No revenue data available.
+              {dashboardT.noRevenueData}
             </div>
           )}
         </div>
@@ -511,10 +519,12 @@ const Dashboard = () => {
           "
         >
           <div className="flex items-center justify-between">
-            <h2 className="text-[23px] font-bold">Actionable Unpaid</h2>
+            <h2 className="text-[23px] font-bold">
+              {dashboardT.actionableUnpaid}
+            </h2>
 
             <span className="text-[14px] font-bold text-[#c6ff00]">
-              {stats.unpaid} unpaid
+              {stats.unpaid} {dashboardT.unpaidCount}
             </span>
           </div>
 
@@ -524,7 +534,7 @@ const Dashboard = () => {
                 <FaCheckCircle className="mx-auto text-[28px] text-[#c6ff00]" />
 
                 <p className="mt-3 text-[14px] text-[#aaa]">
-                  All members have paid this month.
+                  {t.allMembersPaid}
                 </p>
               </div>
             ) : (
@@ -562,7 +572,9 @@ const Dashboard = () => {
                       {member.name}
                     </p>
 
-                    <p className="text-[12px] text-[#d4d6b7]">Payment due</p>
+                    <p className="text-[12px] text-[#d4d6b7]">
+                      {dashboardT.paymentDue}
+                    </p>
                   </div>
 
                   <p className="text-[14px] font-bold text-[#ffaaa5]">
@@ -582,7 +594,7 @@ const Dashboard = () => {
                       sm:block
                     "
                   >
-                    Remind
+                    {dashboardT.remind}
                   </button>
                 </div>
               ))
@@ -602,17 +614,19 @@ const Dashboard = () => {
           "
         >
           <div className="flex items-center justify-between">
-            <h2 className="text-[23px] font-bold">Recent Payments</h2>
+            <h2 className="text-[23px] font-bold">
+              {dashboardT.recentPayments}
+            </h2>
 
             <span className="text-[14px] font-bold text-[#c6ff00]">
-              This Month
+              {dashboardT.thisMonth}
             </span>
           </div>
 
           <div className="mt-5">
             {recentPayments.length === 0 ? (
               <div className="py-8 text-center text-[14px] text-[#777]">
-                No payments recorded this month.
+                {dashboardT.noPayments}
               </div>
             ) : (
               recentPayments.map((payment) => (

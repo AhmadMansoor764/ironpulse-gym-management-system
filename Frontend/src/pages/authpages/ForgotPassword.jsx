@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { FaEnvelope, FaArrowLeft, FaArrowRight, FaBolt } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
+import { useLanguage } from "../context/LanguageContext";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
+
+  const { t } = useLanguage();
 
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
@@ -18,12 +21,12 @@ const ForgotPassword = () => {
 
   const validateEmail = () => {
     if (!email.trim()) {
-      setError("Email address is required.");
+      setError(t.emailRequired);
       return false;
     }
 
     if (!/\S+@\S+\.\S+/.test(email)) {
-      setError("Please enter a valid email address.");
+      setError(t.invalidEmail);
       return false;
     }
 
@@ -69,7 +72,7 @@ const ForgotPassword = () => {
       // Temporary simulation
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      setSuccess("If this email is registered, a reset code has been sent.");
+      setSuccess(t.resetCodeSent);
 
       /*
         After your backend is ready, navigate to:
@@ -81,9 +84,7 @@ const ForgotPassword = () => {
     } catch (error) {
       console.error("Forgot password error:", error);
 
-      setError(
-        error.message || "Unable to process your request. Please try again.",
-      );
+      setError(error.message || t.forgotPasswordError);
     } finally {
       setLoading(false);
     }
@@ -92,10 +93,7 @@ const ForgotPassword = () => {
   return (
     <div className="min-h-screen bg-[#101010] text-white flex items-center justify-center px-5 py-8 sm:px-8">
       <div className="w-full max-w-xl">
-        {/* =====================================
-            CARD
-        ===================================== */}
-
+        {/* CARD */}
         <div
           className="
             rounded-3xl
@@ -111,10 +109,7 @@ const ForgotPassword = () => {
             lg:py-11
           "
         >
-          {/* =====================================
-              BRAND
-          ===================================== */}
-
+          {/* BRAND */}
           <div className="text-center">
             <div className="flex justify-center mb-4">
               <FaBolt
@@ -147,17 +142,14 @@ const ForgotPassword = () => {
                 font-medium
               "
             >
-              Reset Your Password
+              {t.forgotPasswordTitle}
             </p>
           </div>
 
-          {/* =====================================
-              DESCRIPTION
-          ===================================== */}
-
+          {/* DESCRIPTION */}
           <div className="mt-8 text-center">
             <h2 className="text-xl sm:text-2xl font-bold text-white">
-              Forgot your password?
+              {t.forgotPasswordHeading}
             </h2>
 
             <p
@@ -171,15 +163,11 @@ const ForgotPassword = () => {
                 mx-auto
               "
             >
-              Enter the email address associated with your trainer account.
-              We'll send you a verification code to reset your password.
+              {t.forgotPasswordDescription}
             </p>
           </div>
 
-          {/* =====================================
-              FORM
-          ===================================== */}
-
+          {/* FORM */}
           <form onSubmit={handleSubmit} className="mt-8">
             <div>
               <label
@@ -193,35 +181,35 @@ const ForgotPassword = () => {
                   mb-3
                 "
               >
-                Email Address
+                {t.emailAddress}
               </label>
 
               <div
                 className={`
-    flex
-    items-center
-    gap-4
-    rounded-2xl
-    border
-    bg-[#292929]
-    px-5
-    sm:px-6
-    transition-all
+                  flex
+                  items-center
+                  gap-4
+                  rounded-2xl
+                  border
+                  bg-[#292929]
+                  px-5
+                  sm:px-6
+                  transition-all
 
-    ${
-      error
-        ? "border-red-500"
-        : "border-[#343434] focus-within:border-[#c6ff00] focus-within:ring-1 focus-within:ring-[#c6ff00]"
-    }
-  `}
+                  ${
+                    error
+                      ? "border-red-500"
+                      : "border-[#343434] focus-within:border-[#c6ff00] focus-within:ring-1 focus-within:ring-[#c6ff00]"
+                  }
+                `}
               >
                 <FaEnvelope
                   className="
-      flex-shrink-0
-      text-[#c6ff00]
-      text-lg
-      sm:text-xl
-    "
+                    flex-shrink-0
+                    text-[#c6ff00]
+                    text-lg
+                    sm:text-xl
+                  "
                 />
 
                 <input
@@ -230,32 +218,29 @@ const ForgotPassword = () => {
                   type="email"
                   value={email}
                   onChange={handleChange}
-                  placeholder="trainer@ironpulse.com"
+                  placeholder={t.emailPlaceholder}
                   autoComplete="email"
                   disabled={loading}
                   className="
-      flex-1
-      min-w-0
-      bg-transparent
-      outline-none
-      py-4
-      sm:py-5
-      text-base
-      sm:text-lg
-      text-white
-      placeholder:text-[#777]
-      disabled:opacity-60
-    "
+                    flex-1
+                    min-w-0
+                    bg-transparent
+                    outline-none
+                    py-4
+                    sm:py-5
+                    text-base
+                    sm:text-lg
+                    text-white
+                    placeholder:text-[#777]
+                    disabled:opacity-60
+                  "
                 />
               </div>
 
               {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
             </div>
 
-            {/* =====================================
-                SUCCESS
-            ===================================== */}
-
+            {/* SUCCESS */}
             {success && (
               <div
                 className="
@@ -272,10 +257,7 @@ const ForgotPassword = () => {
               </div>
             )}
 
-            {/* =====================================
-                SEND CODE BUTTON
-            ===================================== */}
-
+            {/* SEND CODE BUTTON */}
             <button
               type="submit"
               disabled={loading}
@@ -318,11 +300,12 @@ const ForgotPassword = () => {
                       animate-spin
                     "
                   />
-                  Sending...
+
+                  {t.sending}
                 </>
               ) : (
                 <>
-                  <span>Send Reset Code</span>
+                  <span>{t.sendResetCode}</span>
 
                   <FaArrowRight
                     className="
@@ -336,10 +319,7 @@ const ForgotPassword = () => {
             </button>
           </form>
 
-          {/* =====================================
-              BACK TO LOGIN
-          ===================================== */}
-
+          {/* BACK TO LOGIN */}
           <div className="mt-8 text-center">
             <Link
               to="/trainer/login"
@@ -356,7 +336,8 @@ const ForgotPassword = () => {
               "
             >
               <FaArrowLeft className="text-xs" />
-              Back to Trainer Login
+
+              {t.backToTrainerLogin}
             </Link>
           </div>
         </div>

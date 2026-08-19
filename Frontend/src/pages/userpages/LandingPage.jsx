@@ -9,26 +9,26 @@ import {
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import heroimage from "../../assets/heroimage.png";
+import { useLanguage } from "../context/LanguageContext";
 
 const LandingPage = () => {
+  const { language, setLanguage, t } = useLanguage();
+
   const features = [
     {
       icon: FaBookOpen,
-      title: "Replaces Manual Notebooks",
-      description:
-        "Digitize your client records, workout plans, and attendance. Say goodbye to lost pages.",
+      title: t.feature1Title,
+      description: t.feature1Description,
     },
     {
       icon: FaBell,
-      title: "Automatic Reminders",
-      description:
-        "Reduce no-shows and late payments with automated SMS and push notifications sent directly to clients.",
+      title: t.feature2Title,
+      description: t.feature2Description,
     },
     {
       icon: FaChartLine,
-      title: "Financial Insights",
-      description:
-        "Track revenue, monitor expenses, and forecast growth with simple, powerful charts.",
+      title: t.feature3Title,
+      description: t.feature3Description,
     },
   ];
 
@@ -71,6 +71,31 @@ const LandingPage = () => {
             {/* Desktop navigation */}
 
             <div className="hidden items-center gap-3 md:flex">
+              {/* Language Selector */}
+
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                className="
+                  rounded-xl
+                  border
+                  border-[#404040]
+                  bg-[#171717]
+                  px-3
+                  py-2.5
+                  text-sm
+                  font-semibold
+                  text-white
+                  outline-none
+                  transition-all
+                  focus:border-[#c6ff00]
+                "
+              >
+                <option value="en">English</option>
+                <option value="fa">فارسی</option>
+                <option value="ps">پښتو</option>
+              </select>
+
               <Link
                 to="/login"
                 className="
@@ -87,7 +112,7 @@ const LandingPage = () => {
                   hover:text-[#c6ff00]
                 "
               >
-                Login
+                {t.login}
               </Link>
 
               <Link
@@ -104,23 +129,47 @@ const LandingPage = () => {
                   hover:bg-[#d5ff38]
                 "
               >
-                Get Started
+                {t.getStarted}
               </Link>
             </div>
 
-            {/* Mobile Login */}
+            {/* Mobile navigation */}
 
-            <Link
-              to="/login"
-              className="
-                text-sm
-                font-semibold
-                text-[#c6ff00]
-                md:hidden
-              "
-            >
-              Login
-            </Link>
+            <div className="flex items-center gap-3 md:hidden">
+              {/* Mobile Language Selector */}
+
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                className="
+                  rounded-lg
+                  border
+                  border-[#404040]
+                  bg-[#171717]
+                  px-2
+                  py-1.5
+                  text-xs
+                  font-semibold
+                  text-white
+                  outline-none
+                "
+              >
+                <option value="en">EN</option>
+                <option value="fa">FA</option>
+                <option value="ps">PS</option>
+              </select>
+
+              <Link
+                to="/login"
+                className="
+                  text-sm
+                  font-semibold
+                  text-[#c6ff00]
+                "
+              >
+                {t.login}
+              </Link>
+            </div>
           </nav>
         </div>
       </header>
@@ -215,7 +264,7 @@ const LandingPage = () => {
                       sm:text-xs
                     "
                   >
-                    Built for Elite Trainers
+                    {t.builtForTrainers}
                   </span>
                 </div>
 
@@ -235,8 +284,9 @@ const LandingPage = () => {
                     xl:text-7xl
                   "
                 >
-                  Manage Your Gym{" "}
-                  <span className="text-[#c6ff00]">Without</span> the Paperwork.
+                  {t.heroTitle1}{" "}
+                  <span className="text-[#c6ff00]">{t.heroTitleHighlight}</span>{" "}
+                  {t.heroTitle2}
                 </h1>
 
                 {/* Description */}
@@ -253,8 +303,7 @@ const LandingPage = () => {
                     lg:mx-0
                   "
                 >
-                  Track members, collect payments, and manage finances from one
-                  simple platform designed for serious trainers.
+                  {t.heroDescription}
                 </p>
 
                 {/* Buttons */}
@@ -292,7 +341,8 @@ const LandingPage = () => {
                       sm:w-auto
                     "
                   >
-                    Get Started
+                    {t.getStarted}
+
                     <FaArrowRight className="text-xs" />
                   </Link>
 
@@ -318,7 +368,7 @@ const LandingPage = () => {
                       sm:w-auto
                     "
                   >
-                    Login
+                    {t.login}
                   </Link>
                 </div>
               </div>
@@ -408,7 +458,7 @@ const LandingPage = () => {
                   sm:text-sm
                 "
               >
-                Built for Elite Trainers
+                {t.featuresLabel}
               </p>
 
               <h2
@@ -420,7 +470,7 @@ const LandingPage = () => {
                   lg:text-4xl
                 "
               >
-                Everything you need to run smarter.
+                {t.featuresTitle}
               </h2>
 
               <p
@@ -434,8 +484,7 @@ const LandingPage = () => {
                   sm:text-base
                 "
               >
-                Replace scattered notebooks and spreadsheets with one powerful
-                system built around your training business.
+                {t.featuresDescription}
               </p>
             </div>
 
@@ -573,7 +622,7 @@ const LandingPage = () => {
                 lg:text-4xl
               "
             >
-              Ready to level up?
+              {t.ctaTitle}
             </h2>
 
             <p
@@ -587,8 +636,7 @@ const LandingPage = () => {
                 sm:text-base
               "
             >
-              Join the elite network of trainers using IronPulse to manage their
-              businesses.
+              {t.ctaDescription}
             </p>
 
             <Link
@@ -613,7 +661,8 @@ const LandingPage = () => {
                 sm:w-auto
               "
             >
-              Get Started Now
+              {t.getStartedNow}
+
               <FaArrowRight className="text-xs" />
             </Link>
           </div>
@@ -664,7 +713,7 @@ const LandingPage = () => {
                   sm:text-sm
                 "
               >
-                Privacy
+                {t.privacy}
               </Link>
 
               <Link
@@ -677,7 +726,7 @@ const LandingPage = () => {
                   sm:text-sm
                 "
               >
-                Terms
+                {t.terms}
               </Link>
 
               <Link
@@ -690,15 +739,13 @@ const LandingPage = () => {
                   sm:text-sm
                 "
               >
-                Contact
+                {t.contact}
               </Link>
             </div>
 
             {/* Copyright */}
 
-            <p className="text-xs text-[#666]">
-              © 2026 IronPulse. All rights reserved.
-            </p>
+            <p className="text-xs text-[#666]">{t.copyright}</p>
           </div>
         </div>
       </footer>

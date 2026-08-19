@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   FaArrowLeft,
-  FaEllipsisV,
   FaCheck,
   FaPhone,
   FaEnvelope,
@@ -10,9 +9,15 @@ import {
   FaHistory,
 } from "react-icons/fa";
 
+import { useLanguage } from "../context/LanguageContext";
+
 const MemberDetails = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+
+  const { t } = useLanguage();
+
+  const memberDetailsT = t.memberDetailsPage;
 
   const [member, setMember] = useState(null);
   const [payments, setPayments] = useState([]);
@@ -105,7 +110,9 @@ const MemberDetails = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#111111] p-5 text-white">Loading...</div>
+      <div className="min-h-screen bg-[#111111] p-5 text-white">
+        {memberDetailsT.loading}
+      </div>
     );
   }
 
@@ -118,7 +125,7 @@ const MemberDetails = () => {
   if (!member) {
     return (
       <div className="min-h-screen bg-[#111111] p-5 text-white">
-        Member not found
+        {memberDetailsT.memberNotFound}
       </div>
     );
   }
@@ -159,7 +166,9 @@ const MemberDetails = () => {
 
   const hasCurrentMonthPayment = Boolean(currentMonthPayment);
 
-  const currentStatus = hasCurrentMonthPayment ? "Paid" : "Unpaid";
+  const currentStatus = hasCurrentMonthPayment
+    ? memberDetailsT.paid
+    : memberDetailsT.unpaid;
 
   // ==========================================
   // MEMBER IMAGE
@@ -175,11 +184,7 @@ const MemberDetails = () => {
         min-h-screen
         bg-[#111111]
         text-white
-
-        /* Space for mobile bottom navigation + payment button */
         pb-[180px]
-
-        /* Desktop only needs payment-bar space */
         lg:pb-[120px]
       "
     >
@@ -257,7 +262,7 @@ const MemberDetails = () => {
               lg:text-[21px]
             "
           >
-            Member Details
+            {memberDetailsT.memberDetails}
           </h1>
         </div>
       </header>
@@ -419,7 +424,8 @@ const MemberDetails = () => {
               "
             >
               <FaPhone className="text-xs sm:text-sm" />
-              Call
+
+              <span>{memberDetailsT.call}</span>
             </a>
 
             {member.email && (
@@ -448,7 +454,8 @@ const MemberDetails = () => {
                 "
               >
                 <FaEnvelope className="text-xs sm:text-sm" />
-                Email
+
+                <span>{memberDetailsT.email}</span>
               </a>
             )}
           </div>
@@ -507,7 +514,7 @@ const MemberDetails = () => {
                     sm:text-sm
                   "
                 >
-                  Current Status
+                  {memberDetailsT.currentStatus}
                 </p>
 
                 <div
@@ -567,7 +574,7 @@ const MemberDetails = () => {
                     sm:text-sm
                   "
                 >
-                  Monthly Fee
+                  {memberDetailsT.monthlyFee}
                 </p>
 
                 <p
@@ -597,7 +604,7 @@ const MemberDetails = () => {
                     sm:text-sm
                   "
                 >
-                  Member Since
+                  {memberDetailsT.memberSince}
                 </p>
 
                 <p
@@ -655,11 +662,11 @@ const MemberDetails = () => {
                   sm:text-[23px]
                 "
               >
-                Payment History
+                {memberDetailsT.paymentHistory}
               </h2>
 
               <p className="mt-0.5 text-xs text-[#85877a] sm:text-sm">
-                Previous membership payments
+                {memberDetailsT.previousMembershipPayments}
               </p>
             </div>
           </div>
@@ -712,17 +719,20 @@ const MemberDetails = () => {
                   lg:px-7
                 "
               >
-                <span>Month</span>
-                <span>Date</span>
-                <span>Amount</span>
-                <span>Status</span>
+                <span>{memberDetailsT.month}</span>
+
+                <span>{memberDetailsT.date}</span>
+
+                <span>{memberDetailsT.amount}</span>
+
+                <span>{memberDetailsT.status}</span>
               </div>
 
               {/* LOADING */}
 
               {paymentsLoading && (
                 <div className="px-5 py-9 text-center text-sm text-[#9b9d8a]">
-                  Loading payments...
+                  {memberDetailsT.loadingPayments}
                 </div>
               )}
 
@@ -738,7 +748,7 @@ const MemberDetails = () => {
 
               {!paymentsLoading && !paymentsError && payments.length === 0 && (
                 <div className="px-5 py-9 text-center text-sm text-[#9b9d8a]">
-                  No payments recorded yet.
+                  {memberDetailsT.noPayments}
                 </div>
               )}
 
@@ -791,7 +801,7 @@ const MemberDetails = () => {
                         lg:text-xs
                       "
                     >
-                      PAID
+                      {memberDetailsT.paidStatus}
                     </span>
                   </div>
                 ))}
@@ -802,7 +812,7 @@ const MemberDetails = () => {
             <div className="sm:hidden">
               {paymentsLoading && (
                 <div className="px-5 py-9 text-center text-sm text-[#9b9d8a]">
-                  Loading payments...
+                  {memberDetailsT.loadingPayments}
                 </div>
               )}
 
@@ -814,7 +824,7 @@ const MemberDetails = () => {
 
               {!paymentsLoading && !paymentsError && payments.length === 0 && (
                 <div className="px-5 py-9 text-center text-sm text-[#9b9d8a]">
-                  No payments recorded yet.
+                  {memberDetailsT.noPayments}
                 </div>
               )}
 
@@ -853,12 +863,14 @@ const MemberDetails = () => {
                           text-[#c6ff00]
                         "
                       >
-                        PAID
+                        {memberDetailsT.paidStatus}
                       </span>
                     </div>
 
                     <div className="mt-3 flex items-end justify-between border-t border-[#303030] pt-3">
-                      <span className="text-xs text-[#77796e]">Amount</span>
+                      <span className="text-xs text-[#77796e]">
+                        {memberDetailsT.amount}
+                      </span>
 
                       <span className="text-lg font-bold">
                         ${Number(payment.amount).toFixed(2)}
@@ -873,13 +885,6 @@ const MemberDetails = () => {
 
       {/* =====================================================
           RECORD PAYMENT BAR
-
-          IMPORTANT:
-          Mobile bottom navigation usually occupies ~70px.
-          Therefore this button sits ABOVE it.
-
-          Desktop:
-          left-64 keeps it away from the sidebar.
       ====================================================== */}
 
       <div
@@ -946,7 +951,7 @@ const MemberDetails = () => {
           >
             <FaPlus className="text-sm sm:text-base" />
 
-            <span>Record New Payment</span>
+            <span>{memberDetailsT.recordNewPayment}</span>
           </button>
         </div>
       </div>

@@ -9,12 +9,15 @@ import {
   FaArrowRight,
   FaBolt,
 } from "react-icons/fa";
+import { useLanguage } from "../context/LanguageContext";
 
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const navigate = useNavigate();
+
+  const { t } = useLanguage();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -52,25 +55,25 @@ const Signup = () => {
     const newErrors = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = "Full name is required";
+      newErrors.name = t.signupNameRequired;
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = "Email address is required";
+      newErrors.email = t.signupEmailRequired;
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Enter a valid email address";
+      newErrors.email = t.signupEmailInvalid;
     }
 
     if (!formData.password) {
-      newErrors.password = "Password is required";
+      newErrors.password = t.signupPasswordRequired;
     } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters";
+      newErrors.password = t.signupPasswordMinLength;
     }
 
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password";
+      newErrors.confirmPassword = t.signupConfirmPasswordRequired;
     } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
+      newErrors.confirmPassword = t.signupPasswordsDoNotMatch;
     }
 
     setErrors(newErrors);
@@ -111,7 +114,7 @@ const Signup = () => {
       console.log(data);
 
       if (!response.ok) {
-        throw new Error(data.message || "Unable to create account");
+        throw new Error(data.message || t.signupUnableToCreateAccount);
       }
 
       navigate("/layout/dashboard");
@@ -119,7 +122,7 @@ const Signup = () => {
       console.error("Registration error:", error);
 
       setErrors({
-        submit: error.message || "Unable to create account",
+        submit: error.message || t.signupUnableToCreateAccount,
       });
     } finally {
       setSubmitting(false);
@@ -222,7 +225,7 @@ const Signup = () => {
               text-[#b9bd9e]
             "
           >
-            Trainer Portal Registration
+            {t.signupPageTitle}
           </p>
         </div>
 
@@ -257,7 +260,7 @@ const Signup = () => {
                 text-white
               "
             >
-              Full Name
+              {t.signupFullName}
             </label>
 
             <div
@@ -300,7 +303,7 @@ const Signup = () => {
                 type="text"
                 value={formData.name}
                 onChange={handleChange}
-                placeholder="John Doe"
+                placeholder={t.signupNamePlaceholder}
                 autoComplete="name"
                 className="
                   w-full
@@ -348,7 +351,7 @@ const Signup = () => {
                 text-white
               "
             >
-              Email Address
+              {t.signupEmailAddress}
             </label>
 
             <div
@@ -391,7 +394,7 @@ const Signup = () => {
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="trainer@ironpulse.com"
+                placeholder={t.signupEmailPlaceholder}
                 autoComplete="email"
                 className="
                   w-full
@@ -439,7 +442,7 @@ const Signup = () => {
                 text-white
               "
             >
-              Password
+              {t.signupPassword}
             </label>
 
             <div
@@ -482,7 +485,7 @@ const Signup = () => {
                 type={showPassword ? "text" : "password"}
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="••••••••"
+                placeholder={t.signupPasswordPlaceholder}
                 autoComplete="new-password"
                 className="
                   w-full
@@ -507,7 +510,9 @@ const Signup = () => {
               <button
                 type="button"
                 onClick={() => setShowPassword((previous) => !previous)}
-                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-label={
+                  showPassword ? t.signupHidePassword : t.signupShowPassword
+                }
                 className="
                   absolute
                   right-4
@@ -548,7 +553,7 @@ const Signup = () => {
                 text-white
               "
             >
-              Confirm Password
+              {t.signupConfirmPassword}
             </label>
 
             <div
@@ -591,7 +596,7 @@ const Signup = () => {
                 type={showConfirmPassword ? "text" : "password"}
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                placeholder="••••••••"
+                placeholder={t.signupPasswordPlaceholder}
                 autoComplete="new-password"
                 className="
                   w-full
@@ -618,8 +623,8 @@ const Signup = () => {
                 onClick={() => setShowConfirmPassword((previous) => !previous)}
                 aria-label={
                   showConfirmPassword
-                    ? "Hide confirm password"
-                    : "Show confirm password"
+                    ? t.signupHideConfirmPassword
+                    : t.signupShowConfirmPassword
                 }
                 className="
                   absolute
@@ -713,7 +718,9 @@ const Signup = () => {
               hover:shadow-[0_0_35px_rgba(198,255,0,0.22)]
             "
           >
-            <span>{submitting ? "Creating Account..." : "Create Account"}</span>
+            <span>
+              {submitting ? t.signupCreatingAccount : t.signupCreateAccount}
+            </span>
 
             {!submitting && (
               <FaArrowRight
@@ -742,7 +749,7 @@ const Signup = () => {
               text-[#b9bd9e]
             "
           >
-            Already have an account?{" "}
+            {t.signupAlreadyHaveAccount}{" "}
             <Link
               to="/login"
               className="
@@ -757,7 +764,7 @@ const Signup = () => {
                 transition-colors
               "
             >
-              Login here
+              {t.signupLoginHere}
             </Link>
           </p>
         </div>

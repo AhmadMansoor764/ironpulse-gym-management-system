@@ -18,6 +18,8 @@ import {
   FiTrash2,
 } from "react-icons/fi";
 
+import { useLanguage } from "../context/LanguageContext";
+
 const months = [
   "January",
   "February",
@@ -61,6 +63,10 @@ const categories = [
 ];
 
 function Expenses() {
+  const { t } = useLanguage();
+
+  const expensesT = t.expensesPage;
+
   const chartColors = [
     "#caff00",
     "#ffaaa3",
@@ -77,8 +83,11 @@ function Expenses() {
   const [selectedYear, setSelectedYear] = useState(currentDate.getFullYear());
 
   const [editingExpense, setEditingExpense] = useState(null);
+
   const [showMonthPicker, setShowMonthPicker] = useState(false);
+
   const [showExpenseModal, setShowExpenseModal] = useState(false);
+
   const [loading, setLoading] = useState(false);
 
   const [financialData, setFinancialData] = useState({
@@ -97,6 +106,7 @@ function Expenses() {
   /* =====================================================
      API
   ===================================================== */
+
   const fetchFinancialData = async () => {
     try {
       setLoading(true);
@@ -112,7 +122,7 @@ function Expenses() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Failed to fetch financial data");
+        throw new Error(data.message || expensesT.loadError);
       }
 
       setFinancialData({
@@ -139,6 +149,10 @@ function Expenses() {
 
   const expenseCount = financialData.expenses.length;
 
+  /* =====================================================
+     FORMAT MONEY
+  ===================================================== */
+
   const formatMoney = (amount) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -146,6 +160,10 @@ function Expenses() {
       minimumFractionDigits: 2,
     }).format(amount || 0);
   };
+
+  /* =====================================================
+     CATEGORY DATA
+  ===================================================== */
 
   const categoryData = useMemo(() => {
     const totals = {};
@@ -233,13 +251,11 @@ function Expenses() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Unable to add expense");
+        throw new Error(data.message || expensesT.addExpenseError);
       }
 
-      // Close modal
       setShowExpenseModal(false);
 
-      // Reset form
       setForm({
         description: "",
         category: "Facility",
@@ -247,7 +263,6 @@ function Expenses() {
         expenseDate: new Date().toLocaleDateString("en-CA"),
       });
 
-      // Reload current month data
       await fetchFinancialData();
     } catch (error) {
       console.error("Add expense error:", error);
@@ -257,6 +272,10 @@ function Expenses() {
       setLoading(false);
     }
   };
+
+  /* =====================================================
+     EDIT EXPENSE
+  ===================================================== */
 
   const handleEditExpense = (expense) => {
     setEditingExpense(expense);
@@ -270,6 +289,10 @@ function Expenses() {
 
     setShowExpenseModal(true);
   };
+
+  /* =====================================================
+     UPDATE EXPENSE
+  ===================================================== */
 
   const handleUpdateExpense = async (e) => {
     e.preventDefault();
@@ -290,10 +313,13 @@ function Expenses() {
         `${import.meta.env.VITE_API_URL}/api/expense/${editingExpense.id}`,
         {
           method: "PUT",
+
           headers: {
             "Content-Type": "application/json",
           },
+
           credentials: "include",
+
           body: JSON.stringify({
             description: form.description,
             category: form.category,
@@ -306,10 +332,11 @@ function Expenses() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Unable to update expense");
+        throw new Error(data.message || expensesT.addExpenseError);
       }
 
       setShowExpenseModal(false);
+
       setEditingExpense(null);
 
       setForm({
@@ -322,16 +349,19 @@ function Expenses() {
       await fetchFinancialData();
     } catch (error) {
       console.error("Update expense error:", error);
+
       alert(error.message);
     } finally {
       setLoading(false);
     }
   };
 
+  /* =====================================================
+     DELETE EXPENSE
+  ===================================================== */
+
   const handleDeleteExpense = async (expenseId) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this expense?",
-    );
+    const confirmed = window.confirm(expensesT.deleteExpenseConfirm);
 
     if (!confirmed) return;
 
@@ -349,28 +379,41 @@ function Expenses() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Unable to delete expense");
+        throw new Error(data.message || expensesT.deleteExpenseError);
       }
 
       await fetchFinancialData();
     } catch (error) {
       console.error("Delete expense error:", error);
+
       alert(error.message);
     } finally {
       setLoading(false);
     }
   };
 
+  /* =====================================================
+     MONTH
+  ===================================================== */
+
   const selectMonth = (monthIndex) => {
     setSelectedMonth(monthIndex);
     setShowMonthPicker(false);
   };
+
+  /* =====================================================
+     CATEGORY ICON
+  ===================================================== */
 
   const getCategoryIcon = (category) => {
     const found = categories.find((item) => item.name === category);
 
     return found?.icon || FiMoreHorizontal;
   };
+
+  /* =====================================================
+     UI
+  ===================================================== */
 
   return (
     <div className="min-h-screen bg-[#111111] pb-[100px] text-[#f3f3f3]">
@@ -386,7 +429,7 @@ function Expenses() {
               animate={{ opacity: 1, y: 0 }}
               className="text-[32px] font-bold tracking-[-1px] sm:text-[36px]"
             >
-              Expense Management
+              {expensesT.title}
             </motion.h1>
 
             <motion.p
@@ -395,7 +438,7 @@ function Expenses() {
               transition={{ delay: 0.1 }}
               className="mt-2 text-[16px] text-[#c9c9b1] sm:text-[18px]"
             >
-              Track and categorize facility and operational costs.
+              {expensesT.subtitle}
             </motion.p>
           </div>
 
@@ -421,9 +464,18 @@ function Expenses() {
               <AnimatePresence>
                 {showMonthPicker && (
                   <motion.div
-                    initial={{ opacity: 0, y: -8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -8 }}
+                    initial={{
+                      opacity: 0,
+                      y: -8,
+                    }}
+                    animate={{
+                      opacity: 1,
+                      y: 0,
+                    }}
+                    exit={{
+                      opacity: 0,
+                      y: -8,
+                    }}
                     className="absolute right-0 top-[55px] z-50 w-[260px] overflow-hidden rounded-xl border border-[#363636] bg-[#202020] p-3 shadow-2xl"
                   >
                     <div className="mb-3 flex items-center justify-between px-2">
@@ -482,7 +534,8 @@ function Expenses() {
               className="flex h-[46px] items-center justify-center gap-2 rounded-xl bg-[#caff00] px-6 text-[15px] font-bold text-[#111] transition hover:bg-[#d7ff36] active:scale-[0.98]"
             >
               <FiPlus size={20} />
-              Add Expense
+
+              {expensesT.addExpense}
             </button>
           </div>
         </div>
@@ -493,27 +546,25 @@ function Expenses() {
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <FinancialCard
-            title="TOTAL INCOME"
+            title={expensesT.totalIncome}
             value={formatMoney(financialData.totalIncome)}
-            subtitle="From member payments"
+            subtitle={expensesT.actualMemberPayments}
             icon={<FiDollarSign size={27} />}
             type="income"
           />
 
           <FinancialCard
-            title="TOTAL EXPENSES"
+            title={expensesT.totalExpenses}
             value={formatMoney(financialData.totalExpenses)}
-            subtitle={`${expenseCount} transaction${
-              expenseCount === 1 ? "" : "s"
-            }`}
+            subtitle={`${expenseCount} ${expensesT.expenses}`}
             icon={<FiArrowDownRight size={27} />}
             type="expense"
           />
 
           <FinancialCard
-            title="NET PROFIT"
+            title={expensesT.netProfit}
             value={formatMoney(netProfit)}
-            subtitle="Income − Expenses"
+            subtitle={expensesT.netProfitCalculation}
             icon={
               netProfit >= 0 ? (
                 <FiArrowUpRight size={27} />
@@ -533,11 +584,17 @@ function Expenses() {
           {/* BREAKDOWN */}
 
           <motion.section
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{
+              opacity: 0,
+              y: 15,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
             className="rounded-[18px] border border-[#303030] bg-[#1d1d1d] p-6"
           >
-            <h2 className="text-[21px] font-bold">Expense Breakdown</h2>
+            <h2 className="text-[21px] font-bold">{expensesT.otherExpenses}</h2>
 
             <p className="mt-1 text-[14px] text-[#9e9e92]">
               {months[selectedMonth]} {selectedYear}
@@ -565,7 +622,9 @@ function Expenses() {
                     <div key={item.category} className="flex items-start gap-3">
                       <span
                         className="mt-1.5 h-3 w-3 shrink-0 rounded-full"
-                        style={{ backgroundColor: color }}
+                        style={{
+                          backgroundColor: color,
+                        }}
                       />
 
                       <div className="min-w-0">
@@ -575,7 +634,8 @@ function Expenses() {
 
                         <p className="text-[12px] text-[#929289]">
                           {formatMoney(item.amount)} (
-                          {item.percentage.toFixed(0)}%)
+                          {item.percentage.toFixed(0)}
+                          %)
                         </p>
                       </div>
                     </div>
@@ -588,11 +648,19 @@ function Expenses() {
           {/* SUMMARY */}
 
           <motion.section
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{
+              opacity: 0,
+              y: 15,
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+            }}
             className="rounded-[18px] border border-[#303030] bg-[#1d1d1d] p-6"
           >
-            <h2 className="text-[21px] font-bold">Financial Summary</h2>
+            <h2 className="text-[21px] font-bold">
+              {expensesT.financialOverview}
+            </h2>
 
             <p className="mt-1 text-[14px] text-[#9e9e92]">
               {months[selectedMonth]} {selectedYear}
@@ -600,13 +668,13 @@ function Expenses() {
 
             <div className="mt-7 space-y-5">
               <SummaryRow
-                label="Member Income"
+                label={expensesT.memberPayments}
                 value={formatMoney(financialData.totalIncome)}
                 positive
               />
 
               <SummaryRow
-                label="Operating Expenses"
+                label={expensesT.otherExpenses}
                 value={formatMoney(financialData.totalExpenses)}
                 negative
               />
@@ -614,7 +682,7 @@ function Expenses() {
               <div className="border-t border-[#353535] pt-5">
                 <div className="flex items-center justify-between">
                   <span className="text-[16px] font-semibold text-[#c7c7ba]">
-                    Net Profit
+                    {expensesT.netProfit}
                   </span>
 
                   <span
@@ -631,26 +699,33 @@ function Expenses() {
         </div>
 
         {/* =================================================
-            RECENT TRANSACTIONS
+            RECENT EXPENSES
         ================================================= */}
 
         <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          initial={{
+            opacity: 0,
+            y: 20,
+          }}
+          animate={{
+            opacity: 1,
+            y: 0,
+          }}
           className="mt-5 overflow-hidden rounded-[18px] border border-[#303030] bg-[#1d1d1d]"
         >
           <div className="flex flex-col gap-3 border-b border-[#2c2c2c] px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-[21px] font-bold">Recent Transactions</h2>
+              <h2 className="text-[21px] font-bold">
+                {expensesT.recentExpenses}
+              </h2>
 
               <p className="mt-1 text-[13px] text-[#929289]">
-                Expenses recorded this month
+                {expensesT.otherExpensesDescription}
               </p>
             </div>
 
             <span className="text-[14px] font-semibold text-[#caff00]">
-              {expenseCount} transaction
-              {expenseCount !== 1 && "s"}
+              {expenseCount} {expensesT.total}
             </span>
           </div>
 
@@ -660,11 +735,19 @@ function Expenses() {
             <table className="w-full">
               <thead>
                 <tr className="bg-[#202020] text-left text-[13px] uppercase tracking-[1px] text-[#c6c6b4]">
-                  <th className="px-6 py-4">Date</th>
-                  <th className="px-6 py-4">Description</th>
-                  <th className="px-6 py-4">Category</th>
-                  <th className="px-6 py-4 text-right">Amount</th>
-                  <th className="px-6 py-4 text-right">Actions</th>
+                  <th className="px-6 py-4">{expensesT.expenseDate}</th>
+
+                  <th className="px-6 py-4">{expensesT.expenseName}</th>
+
+                  <th className="px-6 py-4">{expensesT.expenses}</th>
+
+                  <th className="px-6 py-4 text-right">
+                    {expensesT.expenseAmount}
+                  </th>
+
+                  <th className="px-6 py-4 text-right">
+                    {expensesT.editExpense}
+                  </th>
                 </tr>
               </thead>
 
@@ -677,9 +760,18 @@ function Expenses() {
                       <motion.tr
                         layout
                         key={expense.id}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: 20 }}
+                        initial={{
+                          opacity: 0,
+                          x: -20,
+                        }}
+                        animate={{
+                          opacity: 1,
+                          x: 0,
+                        }}
+                        exit={{
+                          opacity: 0,
+                          x: 20,
+                        }}
                         className="border-t border-[#292929] transition hover:bg-[#222222]"
                       >
                         <td className="whitespace-nowrap px-6 py-5 text-[14px] text-[#d4d4cd]">
@@ -717,7 +809,7 @@ function Expenses() {
                             <button
                               onClick={() => handleEditExpense(expense)}
                               className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#292929] text-[#caff00] transition hover:bg-[#343434]"
-                              title="Edit expense"
+                              title={expensesT.editExpense}
                             >
                               <FiEdit2 size={15} />
                             </button>
@@ -725,7 +817,7 @@ function Expenses() {
                             <button
                               onClick={() => handleDeleteExpense(expense.id)}
                               className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#292929] text-[#ff9b91] transition hover:bg-[#343434]"
-                              title="Delete expense"
+                              title={expensesT.deleteExpense}
                             >
                               <FiTrash2 size={15} />
                             </button>
@@ -739,7 +831,7 @@ function Expenses() {
             </table>
           </div>
 
-          {/* MOBILE CARDS */}
+          {/* MOBILE */}
 
           <div className="divide-y divide-[#292929] md:hidden">
             {financialData.expenses.map((expense) => {
@@ -749,8 +841,14 @@ function Expenses() {
                 <motion.div
                   layout
                   key={expense.id}
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
+                  initial={{
+                    opacity: 0,
+                    y: 15,
+                  }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                  }}
                   className="p-5"
                 >
                   <div className="flex items-start justify-between gap-4">
@@ -790,7 +888,8 @@ function Expenses() {
                       className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-[#343434] bg-[#292929] py-3 text-[13px] font-semibold text-[#caff00] transition hover:bg-[#343434]"
                     >
                       <FiEdit2 size={15} />
-                      Edit
+
+                      {expensesT.editExpense}
                     </button>
 
                     <button
@@ -798,7 +897,8 @@ function Expenses() {
                       className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-[#343434] bg-[#292929] py-3 text-[13px] font-semibold text-[#ff9b91] transition hover:bg-[#343434]"
                     >
                       <FiTrash2 size={15} />
-                      Delete
+
+                      {expensesT.deleteExpense}
                     </button>
                   </div>
                 </motion.div>
@@ -810,7 +910,7 @@ function Expenses() {
                 <FiFileText size={35} className="mx-auto text-[#555]" />
 
                 <p className="mt-3 text-[15px] text-[#888]">
-                  No expenses recorded for this month.
+                  {expensesT.noExpenses}
                 </p>
               </div>
             )}
@@ -819,12 +919,8 @@ function Expenses() {
       </div>
 
       {/* =================================================
-          ADD EXPENSE MODAL
+          ADD / EDIT EXPENSE MODAL
       ================================================= */}
-
-      {/* ================================================= 
-    ADD / EDIT EXPENSE MODAL
-================================================= */}
 
       <AnimatePresence>
         {showExpenseModal && (
@@ -855,16 +951,19 @@ function Expenses() {
               className="my-auto flex max-h-[calc(100dvh-130px)] w-full max-w-[550px] flex-col overflow-hidden rounded-[24px] border border-[#333] bg-[#1d1d1d] shadow-2xl sm:max-h-[calc(100dvh-40px)] sm:rounded-[22px]"
             >
               {/* MODAL HEADER */}
+
               <div className="flex shrink-0 items-center justify-between border-b border-[#2c2c2c] px-6 py-5 sm:px-8 sm:py-6">
                 <div>
                   <h2 className="text-[25px] font-bold">
-                    {editingExpense ? "Edit Expense" : "Add Expense"}
+                    {editingExpense
+                      ? expensesT.editExpense
+                      : expensesT.addNewExpense}
                   </h2>
 
                   <p className="mt-1 text-[14px] text-[#999990]">
                     {editingExpense
-                      ? "Update the details of this expense."
-                      : "Record a new gym expense."}
+                      ? expensesT.expenseDescription
+                      : expensesT.otherExpensesDescription}
                   </p>
                 </div>
 
@@ -876,7 +975,8 @@ function Expenses() {
                 </button>
               </div>
 
-              {/* SCROLLABLE MODAL CONTENT */}
+              {/* SCROLLABLE CONTENT */}
+
               <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6 sm:px-8 sm:py-7">
                 <form
                   onSubmit={
@@ -884,11 +984,11 @@ function Expenses() {
                   }
                   className="space-y-5"
                 >
-                  {/* DESCRIPTION */}
+                  {/* EXPENSE NAME */}
 
                   <div>
                     <label className="mb-2 block text-[13px] font-bold uppercase tracking-[1px] text-[#c6c6b7]">
-                      Description
+                      {expensesT.expenseName}
                     </label>
 
                     <input
@@ -900,7 +1000,7 @@ function Expenses() {
                           description: e.target.value,
                         })
                       }
-                      placeholder="e.g. Electricity bill"
+                      placeholder={expensesT.expenseNamePlaceholder}
                       className="h-[52px] w-full rounded-xl border border-[#343434] bg-[#292929] px-4 text-[15px] outline-none placeholder:text-[#777] focus:border-[#caff00]"
                     />
                   </div>
@@ -909,12 +1009,13 @@ function Expenses() {
 
                   <div>
                     <label className="mb-2 block text-[13px] font-bold uppercase tracking-[1px] text-[#c6c6b7]">
-                      Category
+                      {expensesT.expenses}
                     </label>
 
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                       {categories.map((category) => {
                         const Icon = category.icon;
+
                         const active = form.category === category.name;
 
                         return (
@@ -934,6 +1035,7 @@ function Expenses() {
                             }`}
                           >
                             <Icon size={17} />
+
                             {category.name}
                           </button>
                         );
@@ -945,12 +1047,12 @@ function Expenses() {
 
                   <div>
                     <label className="mb-2 block text-[13px] font-bold uppercase tracking-[1px] text-[#c6c6b7]">
-                      Amount
+                      {expensesT.expenseAmount}
                     </label>
 
                     <div className="relative">
                       <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[18px] font-bold text-[#caff00]">
-                        $
+                        {expensesT.currency}
                       </span>
 
                       <input
@@ -964,7 +1066,7 @@ function Expenses() {
                             amount: e.target.value,
                           })
                         }
-                        placeholder="0.00"
+                        placeholder={expensesT.expenseAmountPlaceholder}
                         className="h-[52px] w-full rounded-xl border border-[#343434] bg-[#292929] pl-10 pr-4 text-[17px] font-semibold outline-none placeholder:text-[#777] focus:border-[#caff00]"
                       />
                     </div>
@@ -974,7 +1076,7 @@ function Expenses() {
 
                   <div>
                     <label className="mb-2 block text-[13px] font-bold uppercase tracking-[1px] text-[#c6c6b7]">
-                      Expense Date
+                      {expensesT.expenseDate}
                     </label>
 
                     <input
@@ -990,6 +1092,19 @@ function Expenses() {
                     />
                   </div>
 
+                  {/* DESCRIPTION */}
+
+                  <div>
+                    <label className="mb-2 block text-[13px] font-bold uppercase tracking-[1px] text-[#c6c6b7]">
+                      {expensesT.expenseDescription}
+                    </label>
+
+                    <textarea
+                      placeholder={expensesT.expenseDescriptionPlaceholder}
+                      className="min-h-[100px] w-full resize-none rounded-xl border border-[#343434] bg-[#292929] px-4 py-3 text-[15px] outline-none placeholder:text-[#777] focus:border-[#caff00]"
+                    />
+                  </div>
+
                   {/* BUTTONS */}
 
                   <div className="flex gap-3 pb-2 pt-2">
@@ -997,11 +1112,12 @@ function Expenses() {
                       type="button"
                       onClick={() => {
                         setShowExpenseModal(false);
+
                         setEditingExpense(null);
                       }}
                       className="h-[54px] flex-1 rounded-xl border border-[#383838] text-[15px] font-bold transition hover:bg-[#292929]"
                     >
-                      Cancel
+                      {expensesT.cancel}
                     </button>
 
                     <button
@@ -1012,12 +1128,8 @@ function Expenses() {
                       <FiCheck size={19} />
 
                       {loading
-                        ? editingExpense
-                          ? "Updating..."
-                          : "Saving..."
-                        : editingExpense
-                          ? "Update Expense"
-                          : "Save Expense"}
+                        ? expensesT.savingExpense
+                        : expensesT.saveExpense}
                     </button>
                   </div>
                 </form>
@@ -1040,9 +1152,17 @@ function FinancialCard({ title, value, subtitle, icon, type }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -3 }}
+      initial={{
+        opacity: 0,
+        y: 20,
+      }}
+      animate={{
+        opacity: 1,
+        y: 0,
+      }}
+      whileHover={{
+        y: -3,
+      }}
       className="relative overflow-hidden rounded-[18px] border border-[#303030] bg-[#1d1d1d] p-6"
     >
       <div className="absolute -right-10 -top-10 h-28 w-28 rounded-full bg-[#caff00]/5 blur-3xl" />

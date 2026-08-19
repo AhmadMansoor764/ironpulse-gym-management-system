@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, useParams } from "react-router-dom";
+
 import {
   FiArrowLeft,
   FiUser,
@@ -11,9 +12,22 @@ import {
   FiCamera,
 } from "react-icons/fi";
 
+import { useLanguage } from "../context/LanguageContext";
+
 function EditMember() {
   const navigate = useNavigate();
   const { id } = useParams();
+
+  // =====================================================
+  // LANGUAGE
+  // =====================================================
+
+  const { t } = useLanguage();
+  const editT = t.editMember;
+
+  // =====================================================
+  // STATE
+  // =====================================================
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -48,7 +62,7 @@ function EditMember() {
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.message || "Unable to get member");
+          throw new Error(data.message || editT.getMemberError);
         }
 
         setFormData({
@@ -70,7 +84,7 @@ function EditMember() {
     if (id) {
       getUser();
     }
-  }, [id]);
+  }, [id, editT.getMemberError]);
 
   // =====================================================
   // INPUT CHANGE
@@ -124,7 +138,7 @@ function EditMember() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Unable to update member");
+        throw new Error(data.message || editT.updateMemberError);
       }
 
       navigate(`/layout/MembersDetails/${id}`);
@@ -136,6 +150,7 @@ function EditMember() {
       setSaving(false);
     }
   };
+
   // =====================================================
   // LOADING
   // =====================================================
@@ -166,8 +181,20 @@ function EditMember() {
     );
   }
 
+  // =====================================================
+  // UI
+  // =====================================================
+
   return (
-    <div className="min-h-screen w-full overflow-x-hidden bg-[#111111] text-white">
+    <div
+      className="
+        min-h-screen
+        w-full
+        overflow-x-hidden
+        bg-[#111111]
+        text-white
+      "
+    >
       {/* =================================================
           HEADER
       ================================================= */}
@@ -218,12 +245,19 @@ function EditMember() {
           >
             <FiArrowLeft size={24} />
 
-            <span className="hidden sm:block">Back</span>
+            <span className="hidden sm:block">{editT.back}</span>
           </motion.button>
 
           {/* TITLE */}
 
-          <div className="absolute left-1/2 -translate-x-1/2 text-center">
+          <div
+            className="
+              absolute
+              left-1/2
+              -translate-x-1/2
+              text-center
+            "
+          >
             <h1
               className="
                 whitespace-nowrap
@@ -233,7 +267,7 @@ function EditMember() {
                 sm:text-[25px]
               "
             >
-              Edit Member
+              {editT.title}
             </h1>
 
             <p
@@ -245,7 +279,7 @@ function EditMember() {
                 sm:block
               "
             >
-              Update member information
+              {editT.subtitle}
             </p>
           </div>
 
@@ -415,7 +449,7 @@ function EditMember() {
                   text-[#85877c]
                 "
               >
-                Member
+                {editT.member}
               </p>
 
               <h2
@@ -427,7 +461,7 @@ function EditMember() {
                   sm:text-[30px]
                 "
               >
-                {formData.name || "Member"}
+                {formData.name || editT.memberDefault}
               </h2>
 
               <p
@@ -437,7 +471,7 @@ function EditMember() {
                   text-[#92948a]
                 "
               >
-                Update the information below
+                {editT.updateInformation}
               </p>
             </div>
           </div>
@@ -472,11 +506,13 @@ function EditMember() {
             lg:p-8
           "
         >
-          {/* PERSONAL */}
+          {/* =================================================
+              PERSONAL INFORMATION
+          ================================================= */}
 
           <SectionHeading
-            title="Personal Information"
-            description="Update the member's basic information."
+            title={editT.personalInformation}
+            description={editT.personalDescription}
           />
 
           <div
@@ -489,33 +525,33 @@ function EditMember() {
             "
           >
             <InputField
-              label="Full Name"
+              label={editT.fullName}
               name="name"
               value={formData.name}
               onChange={handleChange}
               icon={FiUser}
-              placeholder="Enter full name"
+              placeholder={editT.fullNamePlaceholder}
               required
             />
 
             <InputField
-              label="Phone Number"
+              label={editT.phoneNumber}
               name="phone"
               value={formData.phone}
               onChange={handleChange}
               icon={FiPhone}
-              placeholder="Enter phone number"
+              placeholder={editT.phonePlaceholder}
               required
             />
 
             <InputField
-              label="Email Address"
+              label={editT.emailAddress}
               name="email"
               value={formData.email}
               onChange={handleChange}
               icon={FiMail}
               type="email"
-              placeholder="Enter email address"
+              placeholder={editT.emailPlaceholder}
             />
           </div>
 
@@ -526,8 +562,8 @@ function EditMember() {
           <div className="my-9 h-px bg-[#30302f]" />
 
           <SectionHeading
-            title="Membership Information"
-            description="Update the member's membership details."
+            title={editT.membershipInformation}
+            description={editT.membershipDescription}
           />
 
           <div
@@ -539,7 +575,7 @@ function EditMember() {
               md:grid-cols-2
             "
           >
-            {/* FEE */}
+            {/* MONTHLY FEE */}
 
             <div>
               <label
@@ -551,7 +587,7 @@ function EditMember() {
                   text-[#dfe0d8]
                 "
               >
-                Monthly Fee
+                {editT.monthlyFee}
               </label>
 
               <div className="relative">
@@ -579,7 +615,7 @@ function EditMember() {
                   min="0"
                   step="0.01"
                   required
-                  placeholder="Enter monthly monthlyFee"
+                  placeholder={editT.monthlyFeePlaceholder}
                   className="
                     h-[64px]
                     w-full
@@ -603,7 +639,7 @@ function EditMember() {
               </div>
             </div>
 
-            {/* DATE */}
+            {/* START DATE */}
 
             <div>
               <label
@@ -615,7 +651,7 @@ function EditMember() {
                   text-[#dfe0d8]
                 "
               >
-                Start Date
+                {editT.startDate}
               </label>
 
               <div className="relative">
@@ -658,8 +694,6 @@ function EditMember() {
                 />
               </div>
             </div>
-
-            {/* STATUS */}
           </div>
 
           {/* =================================================
@@ -679,6 +713,8 @@ function EditMember() {
               sm:justify-end
             "
           >
+            {/* CANCEL */}
+
             <motion.button
               whileTap={{ scale: 0.98 }}
               type="button"
@@ -696,8 +732,10 @@ function EditMember() {
                 hover:bg-[#292929]
               "
             >
-              Cancel
+              {editT.cancel}
             </motion.button>
+
+            {/* SAVE */}
 
             <motion.button
               whileTap={{ scale: 0.98 }}
@@ -734,12 +772,14 @@ function EditMember() {
                       border-t-transparent
                     "
                   />
-                  Saving...
+
+                  {editT.saving}
                 </>
               ) : (
                 <>
                   <FiSave size={20} />
-                  Save Changes
+
+                  {editT.saveChanges}
                 </>
               )}
             </motion.button>

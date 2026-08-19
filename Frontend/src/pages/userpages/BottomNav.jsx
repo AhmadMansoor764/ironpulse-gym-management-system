@@ -3,19 +3,36 @@ import { MdDashboard } from "react-icons/md";
 import { FaUsers, FaRegMoneyBillAlt, FaRegFileAlt } from "react-icons/fa";
 import { FiMenu } from "react-icons/fi";
 
+import { useLanguage } from "../context/LanguageProvider";
+
 function BottomNav() {
+  const { translations } = useLanguage();
+
   return (
     <nav className="fixed bottom-0 left-1/2 z-50 h-[100px] w-full max-w-[600px] -translate-x-1/2 border-t border-[#34342f] bg-[#191919]/95 px-3 backdrop-blur-md">
       <div className="grid h-full grid-cols-5 items-center">
-        <NavItem icon={<MdDashboard />} label="Dashboard" />
+        <NavItem
+          icon={<MdDashboard />}
+          label={translations.bottomNav.dashboard}
+        />
 
-        <NavItem icon={<FaUsers />} label="Members" active />
+        <NavItem
+          icon={<FaUsers />}
+          label={translations.bottomNav.members}
+          active
+        />
 
-        <NavItem icon={<FaRegMoneyBillAlt />} label="Payments" />
+        <NavItem
+          icon={<FaRegMoneyBillAlt />}
+          label={translations.bottomNav.payments}
+        />
 
-        <NavItem icon={<FaRegFileAlt />} label="Expenses" />
+        <NavItem
+          icon={<FaRegFileAlt />}
+          label={translations.bottomNav.expenses}
+        />
 
-        <NavItem icon={<FiMenu />} label="Menu" />
+        <NavItem icon={<FiMenu />} label={translations.bottomNav.menu} />
       </div>
     </nav>
   );

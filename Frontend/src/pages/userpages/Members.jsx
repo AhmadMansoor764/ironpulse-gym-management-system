@@ -8,34 +8,7 @@ import { FaThLarge, FaUserFriends, FaWallet, FaReceipt } from "react-icons/fa";
 
 import MemberCard from "./MemberCard";
 
-/* =========================================================
-   NAVIGATION
-========================================================= */
-
-const navigation = [
-  {
-    name: "Dashboard",
-    icon: FaThLarge,
-    path: "/layout/dashboard",
-  },
-  {
-    name: "Members",
-    icon: FaUserFriends,
-    path: "/layout/members",
-  },
-  {
-    name: "Profile",
-    icon: FaWallet,
-    path: "/layout/profile",
-  },
-  {
-    name: "Expenses",
-    icon: FaReceipt,
-    path: "/layout/expenses",
-  },
-];
-
-const filters = ["All Members", "Paid", "Unpaid"];
+import { useLanguage } from "../context/LanguageContext";
 
 /* =========================================================
    MEMBERS PAGE
@@ -43,6 +16,67 @@ const filters = ["All Members", "Paid", "Unpaid"];
 
 function Members() {
   const navigate = useNavigate();
+
+  const { t } = useLanguage();
+
+  const membersT = t.membersPage;
+
+  /* =========================================================
+     NAVIGATION
+  ========================================================= */
+
+  const navigation = [
+    {
+      name: membersT.dashboard,
+      icon: FaThLarge,
+      path: "/layout/dashboard",
+      key: "dashboard",
+    },
+    {
+      name: membersT.members,
+      icon: FaUserFriends,
+      path: "/layout/members",
+      key: "members",
+    },
+    {
+      name: membersT.profile,
+      icon: FaWallet,
+      path: "/layout/profile",
+      key: "profile",
+    },
+    {
+      name: membersT.expenses,
+      icon: FaReceipt,
+      path: "/layout/expenses",
+      key: "expenses",
+    },
+  ];
+
+  /* =========================================================
+     FILTERS
+  ========================================================= */
+
+  const filters = [
+    {
+      key: "all",
+      value: "All Members",
+      label: membersT.allMembers,
+    },
+    {
+      key: "paid",
+      value: "Paid",
+      label: membersT.paid,
+    },
+    {
+      key: "unpaid",
+      value: "Unpaid",
+      label: membersT.unpaid,
+    },
+  ];
+
+  /* =========================================================
+     STATE
+  ========================================================= */
 
   const [members, setMembers] = useState([]);
 
@@ -52,10 +86,12 @@ function Members() {
 
   const [activeNav, setActiveNav] = useState("Members");
 
+  /* =========================================================
+     DELETE MEMBER
+  ========================================================= */
+
   const handleDeleteMember = async (memberId) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to remove this member? This action cannot be undone.",
-    );
+    const confirmed = window.confirm(membersT.removeMemberConfirm);
 
     if (!confirmed) return;
 
@@ -71,7 +107,7 @@ function Members() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Unable to remove member");
+        throw new Error(data.message || membersT.unableToRemoveMember);
       }
 
       // Remove member from frontend immediately
@@ -79,16 +115,17 @@ function Members() {
         previousMembers.filter((member) => member.id !== memberId),
       );
 
-      console.log("Member removed successfully");
+      console.log(membersT.memberRemoved);
     } catch (error) {
       console.error("Delete member error:", error);
-      alert(error.message);
+
+      alert(error.message || membersT.unableToRemoveMember);
     }
   };
 
-  /* =======================================================
+  /* =========================================================
      GET ALL MEMBERS
-  ======================================================= */
+  ========================================================= */
 
   useEffect(() => {
     const getAllMembers = async () => {
@@ -104,17 +141,15 @@ function Members() {
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.message || "Unable to get members");
+          throw new Error(data.message || membersT.unableToGetMembers);
         }
 
         const membersFromBackend = data.members || [];
 
-        // Get current month/year
-        const now = new Date();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
+        /* ===================================================
+           GET PAYMENT STATUS FOR EVERY MEMBER
+        =================================================== */
 
-        // Get payment status for every member
         const membersWithStatus = await Promise.all(
           membersFromBackend.map(async (member) => {
             try {
@@ -132,19 +167,27 @@ function Members() {
                 return {
                   ...member,
                   status: "unpaid",
-                  lastPaymentLabel: "DUE DATE",
-                  lastPaymentValue: "Payment due",
+                  lastPaymentLabel: membersT.dueDate,
+                  lastPaymentValue: membersT.paymentDue,
                 };
               }
 
               const payments = paymentData.payments || [];
 
-              // Current month
+              /* =============================================
+                 CURRENT MONTH
+              ============================================= */
+
               const now = new Date();
+
               const currentMonth = now.getMonth();
+
               const currentYear = now.getFullYear();
 
-              // Find payment for current month
+              /* =============================================
+                 FIND CURRENT MONTH PAYMENT
+              ============================================= */
+
               const currentMonthPayment = payments.find((payment) => {
                 const paymentDate = new Date(payment.paymentMonth);
 
@@ -154,22 +197,32 @@ function Members() {
                 );
               });
 
-              // Find latest payment
+              /* =============================================
+                 FIND LATEST PAYMENT
+              ============================================= */
+
               const sortedPayments = [...payments].sort(
                 (a, b) => new Date(b.paymentMonth) - new Date(a.paymentMonth),
               );
 
               const latestPayment = sortedPayments[0];
 
-              // STATUS
+              /* =============================================
+                 STATUS
+              ============================================= */
+
               const status = currentMonthPayment ? "paid" : "unpaid";
 
-              // Bottom card information
-              let lastPaymentLabel = "DUE DATE";
-              let lastPaymentValue = "Payment due";
+              /* =============================================
+                 CARD BOTTOM INFORMATION
+              ============================================= */
+
+              let lastPaymentLabel = membersT.dueDate;
+
+              let lastPaymentValue = membersT.paymentDue;
 
               if (latestPayment) {
-                lastPaymentLabel = "LAST PAYMENT";
+                lastPaymentLabel = membersT.lastPayment;
 
                 lastPaymentValue = new Date(
                   latestPayment.createdAt || latestPayment.paymentMonth,
@@ -183,11 +236,10 @@ function Members() {
               return {
                 ...member,
 
-                // IMPORTANT
                 status,
 
-                // Used by MemberCard
                 lastPaymentLabel,
+
                 lastPaymentValue,
               };
             } catch (error) {
@@ -199,8 +251,8 @@ function Members() {
               return {
                 ...member,
                 status: "unpaid",
-                lastPaymentLabel: "DUE DATE",
-                lastPaymentValue: "Payment due",
+                lastPaymentLabel: membersT.dueDate,
+                lastPaymentValue: membersT.paymentDue,
               };
             }
           }),
@@ -213,15 +265,18 @@ function Members() {
     };
 
     getAllMembers();
-  }, []);
-  /* =======================================================
+  }, [membersT]);
+
+  /* =========================================================
      FILTER MEMBERS
-  ======================================================= */
+  ========================================================= */
 
   const filteredMembers = useMemo(() => {
     let result = [...members];
 
-    /* STATUS FILTER */
+    /* =======================================================
+       STATUS FILTER
+    ======================================================= */
 
     if (activeFilter !== "All Members") {
       const statusMap = {
@@ -234,7 +289,9 @@ function Members() {
       );
     }
 
-    /* SEARCH */
+    /* =======================================================
+       SEARCH
+    ======================================================= */
 
     if (search.trim()) {
       const query = search.trim().toLowerCase();
@@ -251,14 +308,19 @@ function Members() {
     return result;
   }, [members, activeFilter, search]);
 
-  /* =======================================================
+  /* =========================================================
      NAVIGATION
-  ======================================================= */
+  ========================================================= */
 
   const goToPage = (item) => {
-    setActiveNav(item.name);
+    setActiveNav(item.key);
+
     navigate(item.path);
   };
+
+  /* =========================================================
+     UI
+  ========================================================= */
 
   return (
     <div
@@ -282,8 +344,10 @@ function Members() {
           px-4
           pb-[145px]
           pt-6
+
           sm:px-6
           sm:pt-8
+
           lg:px-8
           lg:pb-32
         "
@@ -307,10 +371,11 @@ function Members() {
               text-[28px]
               font-bold
               tracking-[-0.8px]
+
               sm:text-[32px]
             "
           >
-            Member Directory
+            {membersT.memberDirectory}
           </h2>
 
           <p
@@ -320,10 +385,11 @@ function Members() {
               text-[16px]
               leading-[1.45]
               text-[#c2c2b1]
+
               sm:text-[18px]
             "
           >
-            Manage clients, view payment status, and track activity.
+            {membersT.manageMembers}
           </p>
         </motion.section>
 
@@ -360,7 +426,7 @@ function Members() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name, phone, or email..."
+            placeholder={membersT.searchPlaceholder}
             className="
               h-[58px]
               w-full
@@ -375,9 +441,11 @@ function Members() {
               outline-none
               placeholder:text-[#bdbdbd]
               transition
+
               focus:border-[#788900]
               focus:ring-1
               focus:ring-[#788900]
+
               sm:h-[62px]
               sm:text-[18px]
             "
@@ -402,15 +470,15 @@ function Members() {
             "
           >
             {filters.map((filter) => {
-              const active = activeFilter === filter;
+              const active = activeFilter === filter.value;
 
               return (
                 <motion.button
-                  key={filter}
+                  key={filter.key}
                   whileTap={{
                     scale: 0.94,
                   }}
-                  onClick={() => setActiveFilter(filter)}
+                  onClick={() => setActiveFilter(filter.value)}
                   className={`
                     shrink-0
                     rounded-full
@@ -419,8 +487,10 @@ function Members() {
                     text-[15px]
                     font-bold
                     transition
+
                     sm:px-7
                     sm:text-[17px]
+
                     ${
                       active
                         ? "border border-[#d6ff00] bg-transparent text-[#d6ff00]"
@@ -428,7 +498,7 @@ function Members() {
                     }
                   `}
                 >
-                  {filter}
+                  {filter.label}
                 </motion.button>
               );
             })}
@@ -474,7 +544,9 @@ function Members() {
             ))}
           </AnimatePresence>
 
-          {/* Empty state */}
+          {/* =================================================
+              EMPTY STATE
+          ================================================== */}
 
           {filteredMembers.length === 0 && (
             <motion.div
@@ -498,7 +570,9 @@ function Members() {
             >
               <FiUser size={35} className="mx-auto text-[#555]" />
 
-              <p className="mt-4 text-[16px] text-[#777]">No members found.</p>
+              <p className="mt-4 text-[16px] text-[#777]">
+                {membersT.noMembersFound}
+              </p>
 
               {search && (
                 <button
@@ -510,7 +584,7 @@ function Members() {
                     text-[#caff00]
                   "
                 >
-                  Clear search
+                  {membersT.clearSearch}
                 </button>
               )}
             </motion.div>
@@ -543,7 +617,8 @@ function Members() {
           scale: 0.9,
         }}
         onClick={() => navigate("/layout/addmember")}
-        aria-label="Add new member"
+        aria-label={membersT.addNewMember}
+        title={membersT.addNewMember}
         className="
           fixed
           bottom-[91px]
@@ -558,9 +633,11 @@ function Members() {
           bg-[#d7ff00]
           text-[#171717]
           shadow-[0_8px_30px_rgba(0,0,0,0.45)]
+
           sm:right-7
           sm:h-[68px]
           sm:w-[68px]
+
           lg:bottom-8
           lg:right-8
         "
@@ -602,11 +679,11 @@ function Members() {
           {navigation.map((item) => {
             const Icon = item.icon;
 
-            const active = activeNav === item.name;
+            const active = activeNav === item.key;
 
             return (
               <button
-                key={item.name}
+                key={item.key}
                 onClick={() => goToPage(item)}
                 className="
                   relative
@@ -645,6 +722,7 @@ function Members() {
                     z-10
                     text-[19px]
                     transition
+
                     ${active ? "text-black" : "text-[#d4d6b7]"}
                   `}
                 />
@@ -658,7 +736,9 @@ function Members() {
                     px-1
                     text-[9px]
                     font-medium
+
                     sm:text-[10px]
+
                     ${active ? "font-bold text-black" : "text-[#d4d6b7]"}
                   `}
                 >

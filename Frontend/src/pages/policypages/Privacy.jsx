@@ -1,7 +1,10 @@
 import { FaBolt, FaArrowLeft, FaShieldAlt } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { useLanguage } from "../context/LanguageContext";
 
 const Privacy = () => {
+  const { t } = useLanguage();
+
   return (
     <div className="min-h-screen bg-[#101010] text-white">
       {/* HEADER */}
@@ -17,7 +20,7 @@ const Privacy = () => {
             className="flex items-center gap-2 text-sm text-[#b9bd9e] hover:text-[#c6ff00]"
           >
             <FaArrowLeft />
-            Back Home
+            {t.backHome}
           </Link>
         </div>
       </header>
@@ -29,125 +32,76 @@ const Privacy = () => {
         </div>
 
         <h1 className="mt-6 text-3xl sm:text-5xl font-extrabold">
-          Privacy Policy
+          {t.privacyPageTitle}
         </h1>
 
-        <p className="mt-4 text-[#888] text-sm">Last updated: August 2026</p>
+        <p className="mt-4 text-[#888] text-sm">{t.lastUpdated}</p>
 
-        <p className="mt-6 text-[#b9bd9e] leading-7">
-          At IronPulse, we respect your privacy and are committed to protecting
-          the information you provide when using our platform.
-        </p>
+        <p className="mt-6 text-[#b9bd9e] leading-7">{t.privacyIntro}</p>
       </section>
 
       {/* CONTENT */}
       <main className="max-w-4xl mx-auto px-5 sm:px-8 pb-20">
         <div className="space-y-8">
-          <PolicySection title="1. Information We Collect">
-            <p>
-              When you use IronPulse, we may collect information that you
-              provide directly to us, including your name, email address, phone
-              number, account information, and information related to your gym
-              or training business.
-            </p>
+          <PolicySection title={t.privacySection1}>
+            <p>{t.privacySection1Text1}</p>
 
-            <p>
-              We may also collect information generated through your use of the
-              platform, such as account activity, client management information,
-              workout plans, financial records, and system preferences.
-            </p>
+            <p>{t.privacySection1Text2}</p>
           </PolicySection>
 
-          <PolicySection title="2. How We Use Your Information">
-            <p>
-              We use collected information to provide, maintain, and improve
-              IronPulse and its features.
-            </p>
+          <PolicySection title={t.privacySection2}>
+            <p>{t.privacySection2Text}</p>
 
             <ul>
-              <li>Provide and manage your account.</li>
-              <li>Provide gym and trainer management features.</li>
-              <li>Process and manage payments where applicable.</li>
-              <li>Send important account notifications.</li>
-              <li>Provide customer support.</li>
-              <li>Improve the security and reliability of our platform.</li>
+              <li>{t.privacySection2Bullet1}</li>
+              <li>{t.privacySection2Bullet2}</li>
+              <li>{t.privacySection2Bullet3}</li>
+              <li>{t.privacySection2Bullet4}</li>
+              <li>{t.privacySection2Bullet5}</li>
+              <li>{t.privacySection2Bullet6}</li>
             </ul>
           </PolicySection>
 
-          <PolicySection title="3. Information Security">
-            <p>
-              We take reasonable technical and organizational measures to
-              protect your information against unauthorized access, alteration,
-              disclosure, or destruction.
-            </p>
+          <PolicySection title={t.privacySection3}>
+            <p>{t.privacySection3Text1}</p>
 
-            <p>
-              However, no internet-based service can guarantee absolute
-              security.
-            </p>
+            <p>{t.privacySection3Text2}</p>
           </PolicySection>
 
-          <PolicySection title="4. Sharing of Information">
-            <p>We do not sell your personal information.</p>
+          <PolicySection title={t.privacySection4}>
+            <p>{t.privacySection4Text1}</p>
 
-            <p>
-              We may share information with service providers that help us
-              operate the platform, such as hosting, authentication, analytics,
-              email, payment, or storage providers.
-            </p>
+            <p>{t.privacySection4Text2}</p>
           </PolicySection>
 
-          <PolicySection title="5. Cookies and Similar Technologies">
-            <p>
-              IronPulse may use cookies or similar technologies to maintain
-              authentication sessions, remember preferences, improve
-              functionality, and understand how users interact with the
-              platform.
-            </p>
+          <PolicySection title={t.privacySection5}>
+            <p>{t.privacySection5Text}</p>
           </PolicySection>
 
-          <PolicySection title="6. Your Rights">
-            <p>
-              Depending on your location, you may have rights regarding your
-              personal information, including the right to access, correct,
-              delete, or request a copy of certain information.
-            </p>
+          <PolicySection title={t.privacySection6}>
+            <p>{t.privacySection6Text}</p>
           </PolicySection>
 
-          <PolicySection title="7. Data Retention">
-            <p>
-              We retain information for as long as reasonably necessary to
-              provide our services, comply with legal obligations, resolve
-              disputes, and enforce our agreements.
-            </p>
+          <PolicySection title={t.privacySection7}>
+            <p>{t.privacySection7Text}</p>
           </PolicySection>
 
-          <PolicySection title="8. Children's Privacy">
-            <p>
-              IronPulse is not intended for children who are unable to lawfully
-              use the service under applicable laws.
-            </p>
+          <PolicySection title={t.privacySection8}>
+            <p>{t.privacySection8Text}</p>
           </PolicySection>
 
-          <PolicySection title="9. Changes to This Policy">
-            <p>
-              We may update this Privacy Policy from time to time. When changes
-              are made, the updated policy will be published on this page with a
-              revised update date.
-            </p>
+          <PolicySection title={t.privacySection9}>
+            <p>{t.privacySection9Text}</p>
           </PolicySection>
 
-          <PolicySection title="10. Contact Us">
-            <p>
-              If you have questions about this Privacy Policy, please contact us
-              through our contact page.
-            </p>
+          <PolicySection title={t.privacySection10}>
+            <p>{t.privacySection10Text}</p>
 
             <Link
               to="/contact"
               className="inline-block mt-4 text-[#c6ff00] font-semibold hover:underline"
             >
-              Contact IronPulse →
+              {t.contactIronPulse}
             </Link>
           </PolicySection>
         </div>
@@ -170,33 +124,35 @@ const PolicySection = ({ title, children }) => {
   );
 };
 
-const Footer = () => (
-  <footer className="border-t border-[#292929] py-8">
-    <div className="max-w-5xl mx-auto px-5 text-center">
-      <Link to="/" className="inline-flex items-center gap-2 font-bold">
-        <FaBolt className="text-[#c6ff00]" />
-        IronPulse
-      </Link>
+const Footer = () => {
+  const { t } = useLanguage();
 
-      <div className="flex justify-center gap-6 mt-5 text-sm text-[#888]">
-        <Link to="/privacy" className="hover:text-[#c6ff00]">
-          Privacy
+  return (
+    <footer className="border-t border-[#292929] py-8">
+      <div className="max-w-5xl mx-auto px-5 text-center">
+        <Link to="/" className="inline-flex items-center gap-2 font-bold">
+          <FaBolt className="text-[#c6ff00]" />
+          IronPulse
         </Link>
 
-        <Link to="/terms" className="hover:text-[#c6ff00]">
-          Terms
-        </Link>
+        <div className="flex justify-center gap-6 mt-5 text-sm text-[#888]">
+          <Link to="/privacy" className="hover:text-[#c6ff00]">
+            {t.privacyPageTitle}
+          </Link>
 
-        <Link to="/contact" className="hover:text-[#c6ff00]">
-          Contact
-        </Link>
+          <Link to="/terms" className="hover:text-[#c6ff00]">
+            {t.terms}
+          </Link>
+
+          <Link to="/contact" className="hover:text-[#c6ff00]">
+            {t.contact}
+          </Link>
+        </div>
+
+        <p className="mt-5 text-xs text-[#666]">{t.copyright}</p>
       </div>
-
-      <p className="mt-5 text-xs text-[#666]">
-        © 2026 IronPulse. All rights reserved.
-      </p>
-    </div>
-  </footer>
-);
+    </footer>
+  );
+};
 
 export default Privacy;

@@ -4,47 +4,55 @@ import {
   FaUserFriends,
   FaReceipt,
   FaUser,
-  FaBell,
-  FaCalendarAlt,
-  FaCommentAlt,
-  FaSearch,
   FaDumbbell,
 } from "react-icons/fa";
 
-const navigation = [
-  {
-    name: "Dashboard",
-    path: "/layout/dashboard",
-    icon: FaThLarge,
-  },
-  {
-    name: "Members",
-    path: "/layout/members",
-    icon: FaUserFriends,
-  },
-  {
-    name: "Expenses",
-    path: "/layout/expenses",
-    icon: FaReceipt,
-  },
-  {
-    name: "Profile",
-    path: "/layout/profile",
-    icon: FaUser,
-  },
-];
+import { useLanguage } from "../context/LanguageContext";
 
 function DashboardLayout() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const isActive = (path) => {
-    if (path === "/dashboard") {
-      return location.pathname === "/dashboard";
-    }
+  const { t } = useLanguage();
 
+  // =========================================================
+  // NAVIGATION
+  // =========================================================
+
+  const navigation = [
+    {
+      name: t.dashboard,
+      path: "/layout/dashboard",
+      icon: FaThLarge,
+    },
+    {
+      name: t.members,
+      path: "/layout/members",
+      icon: FaUserFriends,
+    },
+    {
+      name: t.expenses,
+      path: "/layout/expenses",
+      icon: FaReceipt,
+    },
+    {
+      name: t.profile,
+      path: "/layout/profile",
+      icon: FaUser,
+    },
+  ];
+
+  // =========================================================
+  // ACTIVE NAVIGATION
+  // =========================================================
+
+  const isActive = (path) => {
     return location.pathname.startsWith(path);
   };
+
+  // =========================================================
+  // LOGOUT
+  // =========================================================
 
   const handleLogout = async () => {
     try {
@@ -56,10 +64,10 @@ function DashboardLayout() {
         },
       );
 
-      const data = response.json();
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Unable to logout");
+        throw new Error(data.message || t.unableToLogin);
       }
 
       navigate("/");
@@ -89,14 +97,16 @@ function DashboardLayout() {
           lg:flex-col
         "
       >
-        {/* LOGO */}
+        {/* ===================================================
+            LOGO
+            =================================================== */}
 
         <div className="px-[18px] pt-[18px]">
           <button
-            onClick={() => navigate("/dashboard")}
+            onClick={() => navigate("/layout/dashboard")}
             className="flex items-start gap-3 text-left"
           >
-            {/* Logo Icon */}
+            {/* LOGO ICON */}
 
             <div
               className="
@@ -113,7 +123,7 @@ function DashboardLayout() {
               <FaDumbbell className="text-[25px]" />
             </div>
 
-            {/* Logo Text */}
+            {/* LOGO TEXT */}
 
             <div>
               <h1
@@ -137,13 +147,15 @@ function DashboardLayout() {
                   text-[#d4d6b7]
                 "
               >
-                Elite Performance
+                {t.elitePerformance}
               </p>
             </div>
           </button>
         </div>
 
-        {/* NAVIGATION */}
+        {/* ===================================================
+            NAVIGATION
+            =================================================== */}
 
         <nav className="mt-8 px-[15px]">
           <div className="space-y-1.5">
@@ -188,11 +200,11 @@ function DashboardLayout() {
                   />
 
                   <span
-                    className={`
+                    className="
                       text-[15px]
                       font-semibold
                       tracking-[0.2px]
-                    `}
+                    "
                   >
                     {item.name}
                   </span>
@@ -202,11 +214,15 @@ function DashboardLayout() {
           </div>
         </nav>
 
-        {/* SPACER */}
+        {/* ===================================================
+            SPACER
+            =================================================== */}
 
         <div className="flex-1" />
 
-        {/* ADD MEMBER */}
+        {/* ===================================================
+            ADD MEMBER
+            =================================================== */}
 
         <div className="px-[15px]">
           <button
@@ -231,15 +247,20 @@ function DashboardLayout() {
             "
           >
             <span className="text-[20px] leading-none">+</span>
-            Add New Member
+
+            {t.addNewMember}
           </button>
         </div>
 
-        {/* DIVIDER */}
+        {/* ===================================================
+            DIVIDER
+            =================================================== */}
 
         <div className="mx-[15px] my-7 border-t border-[#292929]" />
 
-        {/* BOTTOM SIDEBAR ACTIONS */}
+        {/* ===================================================
+            LOGOUT
+            =================================================== */}
 
         <div className="mb-5 px-[15px]">
           <button
@@ -261,7 +282,7 @@ function DashboardLayout() {
           >
             <span className="text-[20px]">↪</span>
 
-            <span className="text-[15px] font-semibold">Logout</span>
+            <span className="text-[15px] font-semibold">{t.logout}</span>
           </button>
         </div>
       </aside>
@@ -272,95 +293,102 @@ function DashboardLayout() {
 
       <div className="min-h-screen lg:ml-[270px]">
         {/* ===================================================
-    HEADER
-    =================================================== */}
+            MOBILE HEADER
+            =================================================== */}
+
         <header
           className="
-    sticky
-    top-0
-    z-40
-    h-[64px]
-    border-b
-    border-[#292929]
-    bg-[#111111]/95
-    backdrop-blur-xl
-    lg:hidden
-  "
+            sticky
+            top-0
+            z-40
+            h-[64px]
+            border-b
+            border-[#292929]
+            bg-[#111111]/95
+            backdrop-blur-xl
+            lg:hidden
+          "
         >
           <div
             className="
-      flex
-      h-full
-      items-center
-      justify-between
-      px-5
-    "
+              flex
+              h-full
+              items-center
+              justify-between
+              px-5
+            "
           >
-            {/* MOBILE LOGO / NAME */}
+            {/* =================================================
+                MOBILE LOGO
+                ================================================= */}
 
             <button
               onClick={() => navigate("/layout/dashboard")}
               className="
-        flex
-        items-center
-        gap-3
-      "
+                flex
+                items-center
+                gap-3
+              "
             >
               <div
                 className="
-          flex
-          h-[34px]
-          w-[34px]
-          items-center
-          justify-center
-          rounded-full
-          border
-          border-[#343434]
-          bg-[#1d1d1d]
-        "
+                  flex
+                  h-[34px]
+                  w-[34px]
+                  items-center
+                  justify-center
+                  rounded-full
+                  border
+                  border-[#343434]
+                  bg-[#1d1d1d]
+                "
               >
                 <FaDumbbell className="text-[16px] text-[#c6ff00]" />
               </div>
 
               <span
                 className="
-          text-[25px]
-          font-extrabold
-          tracking-[-1px]
-        "
+                  text-[25px]
+                  font-extrabold
+                  tracking-[-1px]
+                "
               >
                 IronPulse
               </span>
             </button>
 
-            {/* PROFILE */}
+            {/* =================================================
+                MOBILE PROFILE
+                ================================================= */}
 
             <button
               onClick={() => navigate("/layout/profile")}
-              aria-label="Open profile"
+              aria-label={t.openProfile}
               className="
-        flex
-        h-10
-        w-10
-        items-center
-        justify-center
-        overflow-hidden
-        rounded-full
-        border
-        border-[#343434]
-        bg-[#1d1d1d]
-        transition
-        hover:border-[#c6ff00]
-        active:scale-95
-      "
+                flex
+                h-10
+                w-10
+                items-center
+                justify-center
+                overflow-hidden
+                rounded-full
+                border
+                border-[#343434]
+                bg-[#1d1d1d]
+                transition
+                hover:border-[#c6ff00]
+                active:scale-95
+              "
             >
               <FaUser className="text-[16px] text-[#d4d6b7]" />
             </button>
           </div>
         </header>
+
         {/* ===================================================
             PAGE CONTENT
             =================================================== */}
+
         <main className="min-w-0 pb-[92px] lg:pb-8">
           <Outlet />
         </main>
@@ -416,7 +444,9 @@ function DashboardLayout() {
                   overflow-hidden
                 "
               >
-                {/* ACTIVE PILL */}
+                {/* =================================================
+                    ACTIVE PILL
+                    ================================================= */}
 
                 {active && (
                   <div
@@ -433,7 +463,9 @@ function DashboardLayout() {
                   />
                 )}
 
-                {/* ICON */}
+                {/* =================================================
+                    ICON
+                    ================================================= */}
 
                 <Icon
                   className={`
@@ -447,7 +479,9 @@ function DashboardLayout() {
                   `}
                 />
 
-                {/* LABEL */}
+                {/* =================================================
+                    LABEL
+                    ================================================= */}
 
                 <span
                   className={`

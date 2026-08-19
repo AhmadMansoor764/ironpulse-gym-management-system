@@ -17,9 +17,19 @@ import {
   FiEyeOff,
 } from "react-icons/fi";
 
+// CHANGE THIS PATH IF YOUR LanguageContext IS IN A DIFFERENT FOLDER
+import { useLanguage } from "../context/LanguageContext";
+
 function TrainerProfile() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
+
+  // =====================================================
+  // LANGUAGE
+  // =====================================================
+
+  const { t } = useLanguage();
+  const p = t.trainerProfilePage;
 
   // =====================================================
   // TRAINER DATA
@@ -41,6 +51,7 @@ function TrainerProfile() {
   const [profileImage, setProfileImage] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+
   // =====================================================
   // UI STATES
   // =====================================================
@@ -133,7 +144,7 @@ function TrainerProfile() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Unable to upload image");
+        throw new Error(data.message || p.unableToUploadImage);
       }
 
       return data.data.image;
@@ -144,7 +155,10 @@ function TrainerProfile() {
       setIsUploadingImage(false);
     }
   };
-  // load current user
+
+  // =====================================================
+  // LOAD CURRENT USER
+  // =====================================================
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -160,7 +174,7 @@ function TrainerProfile() {
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.message || "Unable to load profile");
+          throw new Error(data.message || p.unableToLoadProfile);
         }
 
         console.log("Profile:", data);
@@ -220,7 +234,7 @@ function TrainerProfile() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Unable to update profile");
+        throw new Error(data.message || p.unableToUpdateProfile);
       }
 
       // 2. Upload image if a new image was selected
@@ -232,7 +246,8 @@ function TrainerProfile() {
       }
 
       // 3. Show success message
-      setProfileMessage("Profile updated successfully.");
+      setProfileMessage(p.profileUpdatedSuccessfully);
+
       setTimeout(() => {
         setProfileMessage("");
       }, 3000);
@@ -242,10 +257,7 @@ function TrainerProfile() {
     } catch (error) {
       console.error("Profile update error:", error);
 
-      // Show error to the user
-      setProfileError(
-        error.message || "Something went wrong while updating your profile.",
-      );
+      setProfileError(error.message || p.profileUpdateError);
     } finally {
       setIsSaving(false);
     }
@@ -262,12 +274,12 @@ function TrainerProfile() {
     setPasswordError("");
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      setPasswordError("New passwords do not match.");
+      setPasswordError(p.newPasswordsDoNotMatch);
       return;
     }
 
     if (passwordData.newPassword.length < 6) {
-      setPasswordError("Password should contain at least 6 characters.");
+      setPasswordError(p.passwordMinimumLength);
       return;
     }
 
@@ -293,10 +305,10 @@ function TrainerProfile() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Unable to update password");
+        throw new Error(data.message || p.unableToUpdatePassword);
       }
 
-      setPasswordMessage(data.message || "Password changed successfully.");
+      setPasswordMessage(data.message || p.passwordChangedSuccessfully);
 
       setPasswordData({
         currentPassword: "",
@@ -312,6 +324,7 @@ function TrainerProfile() {
       setIsChangingPassword(false);
     }
   };
+
   // =====================================================
   // LOGOUT
   // =====================================================
@@ -329,7 +342,7 @@ function TrainerProfile() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Unable to logout");
+        throw new Error(data.message || p.unableToLogout);
       }
 
       console.log("Logout successful");
@@ -385,11 +398,11 @@ function TrainerProfile() {
                   sm:text-[31px]
                 "
               >
-                Trainer Profile
+                {p.title}
               </h1>
 
               <p className="mt-1.5 text-[14px] text-[#85877c] sm:text-[15px]">
-                Manage your account and gym information
+                {p.subtitle}
               </p>
             </div>
 
@@ -500,7 +513,7 @@ function TrainerProfile() {
                 {profileImage ? (
                   <img
                     src={profileImage}
-                    alt="Trainer"
+                    alt={p.gymTrainer}
                     className="h-full w-full object-cover"
                   />
                 ) : (
@@ -578,7 +591,7 @@ function TrainerProfile() {
                   text-[#92947f]
                 "
               >
-                Gym Trainer
+                {p.gymTrainer}
               </p>
 
               <h2
@@ -632,7 +645,7 @@ function TrainerProfile() {
             >
               <FiEdit3 size={18} />
 
-              {isEditing ? "Cancel Edit" : "Edit Profile"}
+              {isEditing ? p.cancelEdit : p.editProfile}
             </motion.button>
           </div>
         </motion.section>
@@ -645,6 +658,7 @@ function TrainerProfile() {
           {/* =================================================
               PERSONAL INFORMATION
           ================================================= */}
+
           <motion.section
             initial={{
               opacity: 0,
@@ -670,8 +684,8 @@ function TrainerProfile() {
             "
           >
             <SectionHeading
-              title="Personal Information"
-              description="Your personal contact information."
+              title={p.personalInformation}
+              description={p.personalInformationDescription}
             />
 
             <div
@@ -684,7 +698,7 @@ function TrainerProfile() {
               "
             >
               <ProfileInput
-                label="Full Name"
+                label={p.fullName}
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
@@ -693,7 +707,7 @@ function TrainerProfile() {
               />
 
               <ProfileInput
-                label="Phone Number"
+                label={p.phoneNumber}
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
@@ -702,7 +716,7 @@ function TrainerProfile() {
               />
 
               <ProfileInput
-                label="Email Address"
+                label={p.emailAddress}
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
@@ -724,7 +738,7 @@ function TrainerProfile() {
                   text-[#dfe0d8]
                 "
               >
-                About
+                {p.about}
               </label>
 
               <textarea
@@ -733,7 +747,7 @@ function TrainerProfile() {
                 onChange={handleChange}
                 disabled={!isEditing}
                 rows={4}
-                placeholder="Tell members a little about yourself..."
+                placeholder={p.aboutPlaceholder}
                 className="
                   w-full
                   resize-none
@@ -756,9 +770,11 @@ function TrainerProfile() {
               />
             </div>
           </motion.section>
+
           {/* =================================================
               GYM INFORMATION
           ================================================= */}
+
           <motion.section
             initial={{
               opacity: 0,
@@ -784,8 +800,8 @@ function TrainerProfile() {
             "
           >
             <SectionHeading
-              title="Gym Information"
-              description="Information about your gym."
+              title={p.gymInformation}
+              description={p.gymInformationDescription}
             />
 
             <div
@@ -798,7 +814,7 @@ function TrainerProfile() {
               "
             >
               <ProfileInput
-                label="Gym Name"
+                label={p.gymName}
                 name="gymName"
                 value={formData.gymName}
                 onChange={handleChange}
@@ -807,7 +823,7 @@ function TrainerProfile() {
               />
 
               <ProfileInput
-                label="Gym Address"
+                label={p.gymAddress}
                 name="address"
                 value={formData.address}
                 onChange={handleChange}
@@ -817,19 +833,24 @@ function TrainerProfile() {
             </div>
           </motion.section>
 
+          {/* PROFILE MESSAGES */}
+
           {profileMessage && (
             <div className="mt-4 rounded-[11px] border border-[#344500] bg-[#202900] px-4 py-3 text-sm text-[#d6ff00]">
               {profileMessage}
             </div>
           )}
+
           {profileError && (
             <div className="mt-4 rounded-[11px] border border-[#542d2d] bg-[#2a1d1d] px-4 py-3 text-sm text-[#ff9c91]">
               {profileError}
             </div>
           )}
+
           {/* =================================================
               SAVE BUTTON
           ================================================= */}
+
           {isEditing && (
             <motion.button
               initial={{
@@ -879,12 +900,13 @@ function TrainerProfile() {
                       border-t-transparent
                     "
                   />
-                  Saving...
+
+                  {p.saving}
                 </>
               ) : (
                 <>
                   <FiSave size={20} />
-                  Save Changes
+                  {p.saveChanges}
                 </>
               )}
             </motion.button>
@@ -920,8 +942,8 @@ function TrainerProfile() {
           "
         >
           <SectionHeading
-            title="Security"
-            description="Manage your account security."
+            title={p.security}
+            description={p.securityDescription}
           />
 
           {!showPasswordForm ? (
@@ -962,10 +984,10 @@ function TrainerProfile() {
                 </div>
 
                 <div>
-                  <p className="font-semibold text-white">Change Password</p>
+                  <p className="font-semibold text-white">{p.changePassword}</p>
 
                   <p className="mt-1 text-[13px] text-[#8e9085]">
-                    Update your account password
+                    {p.updateYourAccountPassword}
                   </p>
                 </div>
               </div>
@@ -985,8 +1007,9 @@ function TrainerProfile() {
                   {passwordMessage}
                 </div>
               )}
+
               <PasswordInput
-                label="Current Password"
+                label={p.currentPassword}
                 name="currentPassword"
                 value={passwordData.currentPassword}
                 onChange={handlePasswordChange}
@@ -995,7 +1018,7 @@ function TrainerProfile() {
               />
 
               <PasswordInput
-                label="New Password"
+                label={p.newPassword}
                 name="newPassword"
                 value={passwordData.newPassword}
                 onChange={handlePasswordChange}
@@ -1004,7 +1027,7 @@ function TrainerProfile() {
               />
 
               <PasswordInput
-                label="Confirm New Password"
+                label={p.confirmNewPassword}
                 name="confirmPassword"
                 value={passwordData.confirmPassword}
                 onChange={handlePasswordChange}
@@ -1027,41 +1050,42 @@ function TrainerProfile() {
                   type="submit"
                   disabled={isChangingPassword}
                   className="
-    flex
-    h-[54px]
-    min-w-[170px]
-    items-center
-    justify-center
-    gap-2
-    rounded-[11px]
-    bg-[#d6ff00]
-    px-7
-    font-bold
-    text-[#111111]
-    transition
-    disabled:cursor-not-allowed
-    disabled:opacity-70
-  "
+                    flex
+                    h-[54px]
+                    min-w-[170px]
+                    items-center
+                    justify-center
+                    gap-2
+                    rounded-[11px]
+                    bg-[#d6ff00]
+                    px-7
+                    font-bold
+                    text-[#111111]
+                    transition
+                    disabled:cursor-not-allowed
+                    disabled:opacity-70
+                  "
                 >
                   {isChangingPassword ? (
                     <>
                       <span
                         className="
-          h-5
-          w-5
-          animate-spin
-          rounded-full
-          border-2
-          border-[#111111]
-          border-t-transparent
-        "
+                          h-5
+                          w-5
+                          animate-spin
+                          rounded-full
+                          border-2
+                          border-[#111111]
+                          border-t-transparent
+                        "
                       />
-                      Updating...
+
+                      {p.updating}
                     </>
                   ) : (
                     <>
                       <FiLock size={18} />
-                      Update Password
+                      {p.updatePassword}
                     </>
                   )}
                 </motion.button>
@@ -1079,7 +1103,7 @@ function TrainerProfile() {
                     text-[#ddddda]
                   "
                 >
-                  Cancel
+                  {p.cancel}
                 </button>
               </div>
             </form>
@@ -1117,7 +1141,7 @@ function TrainerProfile() {
           "
         >
           <FiLogOut size={21} />
-          Log Out
+          {p.logout}
         </motion.button>
       </main>
     </div>

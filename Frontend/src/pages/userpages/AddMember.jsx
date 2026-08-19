@@ -11,8 +11,12 @@ import {
   FiSave,
 } from "react-icons/fi";
 
+import { useLanguage } from "../context/LanguageContext";
+
 function AddMember() {
   const navigate = useNavigate();
+
+  const { t } = useLanguage();
 
   // -----------------------------------------
   // FORM STATE
@@ -76,7 +80,7 @@ function AddMember() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Unable to add member");
+        throw new Error(data.message || t.addMemberError);
       }
 
       console.log("Member created:", data);
@@ -164,7 +168,7 @@ function AddMember() {
                 sm:block
               "
             >
-              CANCEL
+              {t.cancel}
             </span>
           </motion.button>
 
@@ -265,7 +269,7 @@ function AddMember() {
               lg:text-[38px]
             "
           >
-            Add New Member
+            {t.addMember}
           </h2>
 
           <p
@@ -279,7 +283,7 @@ function AddMember() {
               sm:text-[17px]
             "
           >
-            Enter the details to register a new gym member.
+            {t.addMemberDescription}
           </p>
         </motion.div>
 
@@ -320,11 +324,11 @@ function AddMember() {
             <div className="mb-7">
               <div className="mb-5">
                 <h3 className="text-[18px] font-bold text-[#f0f0eb]">
-                  Basic Information
+                  {t.basicInformation}
                 </h3>
 
                 <p className="mt-1 text-[13px] text-[#85867d]">
-                  Enter the member's contact information.
+                  {t.basicInformationDescription}
                 </p>
               </div>
 
@@ -333,48 +337,48 @@ function AddMember() {
               <div className="grid grid-cols-1 gap-x-5 gap-y-5 md:grid-cols-2">
                 {/* FULL NAME */}
 
-                <FormField label="Full Name" icon={FiUser} delay={0.05}>
+                <FormField label={t.fullName} icon={FiUser} delay={0.05}>
                   <input
                     type="text"
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    placeholder="e.g. John Doe"
+                    placeholder={t.fullNamePlaceholder}
                     className="input-field pl-[54px]"
                   />
                 </FormField>
 
                 {/* PHONE */}
 
-                <FormField label="Phone Number" icon={FiPhone} delay={0.1}>
+                <FormField label={t.phoneNumber} icon={FiPhone} delay={0.1}>
                   <input
                     type="tel"
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
                     required
-                    placeholder="(555) 000-0000"
+                    placeholder={t.phoneNumberPlaceholder}
                     className="input-field pl-[54px]"
                   />
                 </FormField>
 
                 {/* EMAIL */}
 
-                <FormField label="Email Address" icon={FiMail} delay={0.15}>
+                <FormField label={t.emailAddress} icon={FiMail} delay={0.15}>
                   <input
                     type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    placeholder="john.doe@example.com"
+                    placeholder={t.emailPlaceholder}
                     className="input-field pl-[54px]"
                   />
                 </FormField>
 
                 {/* MONTHLY FEE */}
 
-                <FormField label="Monthly Fee" icon={null} delay={0.2}>
+                <FormField label={t.monthlyFee} icon={null} delay={0.2}>
                   <div className="relative">
                     <span
                       className="
@@ -400,7 +404,7 @@ function AddMember() {
                       required
                       min="0"
                       step="0.01"
-                      placeholder="Enter monthly fee"
+                      placeholder={t.monthlyFeePlaceholder}
                       className="
                         input-field
                         pl-[48px]
@@ -423,17 +427,17 @@ function AddMember() {
             <div className="mb-7">
               <div className="mb-5">
                 <h3 className="text-[18px] font-bold text-[#f0f0eb]">
-                  Membership Details
+                  {t.membershipDetails}
                 </h3>
 
                 <p className="mt-1 text-[13px] text-[#85867d]">
-                  Set the member's starting date.
+                  {t.membershipDetailsDescription}
                 </p>
               </div>
 
               {/* START DATE */}
 
-              <FormField label="Start Date" icon={null} delay={0.25}>
+              <FormField label={t.startDate} icon={null} delay={0.25}>
                 <input
                   type="date"
                   name="startDate"
@@ -459,25 +463,21 @@ function AddMember() {
             <div className="mb-7">
               <div className="mb-5">
                 <h3 className="text-[18px] font-bold text-[#f0f0eb]">
-                  Additional Information
+                  {t.additionalInformation}
                 </h3>
 
                 <p className="mt-1 text-[13px] text-[#85867d]">
-                  Add any internal notes about this member.
+                  {t.additionalInformationDescription}
                 </p>
               </div>
 
-              <FormField
-                label="Internal Notes (Optional)"
-                icon={null}
-                delay={0.3}
-              >
+              <FormField label={t.internalNotes} icon={null} delay={0.3}>
                 <textarea
                   name="notes"
                   value={formData.notes}
                   onChange={handleChange}
                   rows={4}
-                  placeholder="Goals, training preferences, or general notes..."
+                  placeholder={t.internalNotesPlaceholder}
                   className="
                     min-h-[125px]
                     w-full
@@ -579,7 +579,7 @@ function AddMember() {
                   sm:w-auto
                 "
               >
-                Cancel
+                {t.cancel}
               </motion.button>
 
               {/* SAVE */}
@@ -627,12 +627,12 @@ function AddMember() {
                         border-t-transparent
                       "
                     />
-                    Saving...
+                    {t.saving}
                   </>
                 ) : (
                   <>
                     <FiSave size={21} strokeWidth={2} />
-                    Save Member
+                    {t.saveMember}
                   </>
                 )}
               </motion.button>

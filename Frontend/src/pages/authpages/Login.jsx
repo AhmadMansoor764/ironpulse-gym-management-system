@@ -7,9 +7,11 @@ import {
   FaEyeSlash,
 } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
+import { useLanguage } from "../context/LanguageContext";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -49,13 +51,13 @@ const Login = () => {
     const newErrors = {};
 
     if (!formData.email.trim()) {
-      newErrors.email = "Email address is required";
+      newErrors.email = t.emailRequired;
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Enter a valid email address";
+      newErrors.email = t.validEmail;
     }
 
     if (!formData.password) {
-      newErrors.password = "Password is required";
+      newErrors.password = t.passwordRequired;
     }
 
     setErrors(newErrors);
@@ -97,7 +99,7 @@ const Login = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Login failed");
+        throw new Error(data.message || t.loginFailed);
       }
 
       console.log("Trainer login successful");
@@ -107,7 +109,7 @@ const Login = () => {
       console.error("Trainer login error:", error);
 
       setErrors({
-        submit: error.message || "Unable to login",
+        submit: error.message || t.unableToLogin,
       });
     } finally {
       setSubmitting(false);
@@ -217,7 +219,7 @@ const Login = () => {
               text-[#c2c5a8]
             "
           >
-            Trainer Access Portal
+            {t.trainerAccessPortal}
           </p>
         </div>
 
@@ -250,7 +252,7 @@ const Login = () => {
                 text-white
               "
             >
-              Email Address
+              {t.emailAddress}
             </label>
 
             <div
@@ -293,7 +295,7 @@ const Login = () => {
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="trainer@ironpulse.com"
+                placeholder={t.trainerEmailPlaceholder}
                 autoComplete="email"
                 className="
                   w-full
@@ -346,7 +348,7 @@ const Login = () => {
                   text-white
                 "
               >
-                Password
+                {t.password}
               </label>
 
               <Link
@@ -364,7 +366,7 @@ const Login = () => {
                   transition-colors
                 "
               >
-                Forgot?
+                {t.forgotPassword}
               </Link>
             </div>
 
@@ -437,7 +439,7 @@ const Login = () => {
               <button
                 type="button"
                 onClick={() => setShowPassword((previous) => !previous)}
-                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-label={showPassword ? t.hidePassword : t.showPassword}
                 className="
                   absolute
                   right-4
@@ -522,7 +524,7 @@ const Login = () => {
                   text-[#c5c8ac]
                 "
               >
-                Remember this device
+                {t.rememberDevice}
               </span>
             </label>
           </div>
@@ -590,7 +592,7 @@ const Login = () => {
               hover:shadow-[0_0_35px_rgba(198,255,0,0.22)]
             "
           >
-            {submitting ? "Signing In..." : "Secure Login"}
+            {submitting ? t.signingIn : t.secureLogin}
           </button>
         </form>
 
@@ -609,7 +611,7 @@ const Login = () => {
               text-[#c5c8ac]
             "
           >
-            New trainer?{" "}
+            {t.newTrainer}{" "}
             <Link
               to="/signup"
               className="
@@ -624,7 +626,7 @@ const Login = () => {
                 transition-colors
               "
             >
-              Request Access
+              {t.requestAccess}
             </Link>
           </p>
         </div>

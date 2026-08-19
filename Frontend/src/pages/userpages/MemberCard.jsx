@@ -10,14 +10,32 @@ import {
   FiXCircle,
   FiEdit2,
   FiCreditCard,
-  FiPauseCircle,
   FiTrash2,
 } from "react-icons/fi";
 
+import { useLanguage } from "../context/LanguageContext";
+
 function MemberCard({ member, index, onDelete }) {
   const navigate = useNavigate();
+
+  const { t, language } = useLanguage();
+
+  const memberCardT = t.memberCard;
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuDirection, setMenuDirection] = useState("down");
+
+  /*
+  =========================================================
+  LANGUAGE DIRECTION
+  =========================================================
+
+  English  -> LTR
+  Persian  -> RTL
+  Pashto   -> RTL
+  */
+
+  const isRTL = language === "fa" || language === "ps";
 
   /* =======================================================
      STATUS CONFIG
@@ -25,14 +43,14 @@ function MemberCard({ member, index, onDelete }) {
 
   const statusConfig = {
     paid: {
-      text: "PAID",
+      text: memberCardT.paid,
       icon: FiCheckCircle,
       className: "border-[#657d00] bg-[#2b310f] text-[#d6ff00]",
       valueColor: "text-[#d0d0c7]",
     },
 
     unpaid: {
-      text: "UNPAID",
+      text: memberCardT.unpaid,
       icon: FiXCircle,
       className: "border-[#795b55] bg-[#342522] text-[#ff9b91]",
       valueColor: "text-[#ff9d92]",
@@ -64,7 +82,7 @@ function MemberCard({ member, index, onDelete }) {
       // Approximate menu height
       const menuHeight = 230;
 
-      // Bottom navigation is around 72px high
+      // Bottom navigation height
       const bottomNavHeight = 72;
 
       const spaceBelow =
@@ -113,19 +131,18 @@ function MemberCard({ member, index, onDelete }) {
      LAST PAYMENT INFORMATION
   ======================================================= */
 
-  /*
-   * The backend should provide this information from
-   * the payment records.
-   *
-   * We intentionally do not keep the old "value" field.
-   */
-
-  const paymentLabel = member.lastPaymentLabel || "DUE DATE";
+  const paymentLabel = member.lastPaymentLabel || memberCardT.dueDate;
 
   const paymentValue =
     member.lastPaymentValue ||
     member.lastPaymentDate ||
-    (member.status === "unpaid" ? "Payment due" : "No payment yet");
+    (member.status === "unpaid"
+      ? memberCardT.paymentDue
+      : memberCardT.noPaymentYet);
+
+  /* =======================================================
+     UI
+  ======================================================= */
 
   return (
     <motion.article
@@ -154,23 +171,25 @@ function MemberCard({ member, index, onDelete }) {
       }}
       onClick={openDetails}
       className={`
-  group
-  relative
-  min-h-[212px]
-  cursor-pointer
-  overflow-visible
-  rounded-[18px]
-  border
-  border-[#2b2b2a]
-  bg-[#1e1e1e]
-  p-[29px]
-  transition-colors
-  duration-300
-  hover:border-[#44463b]
-  ${menuOpen ? "z-[1000]" : "z-0"}
-`}
+        group
+        relative
+        min-h-[212px]
+        cursor-pointer
+        overflow-visible
+        rounded-[18px]
+        border
+        border-[#2b2b2a]
+        bg-[#1e1e1e]
+        p-[29px]
+        transition-colors
+        duration-300
+        hover:border-[#44463b]
+        ${menuOpen ? "z-[1000]" : "z-0"}
+      `}
     >
-      {/* SUBTLE HOVER GLOW */}
+      {/* =====================================================
+          SUBTLE HOVER GLOW
+      ===================================================== */}
 
       <div
         className="
@@ -189,29 +208,32 @@ function MemberCard({ member, index, onDelete }) {
         "
       />
 
-      {/* TOP */}
+      {/* =====================================================
+          TOP
+      ===================================================== */}
 
       <div className="relative flex items-start justify-between">
         <div className="flex min-w-0 items-center gap-5">
           {/* AVATAR */}
+
           <div
             className="
-    flex
-    h-[70px]
-    w-[70px]
-    shrink-0
-    items-center
-    justify-center
-    rounded-full
-    bg-[#292929]
-    text-[28px]
-    font-medium
-    text-[#c7c7ad]
-    transition
-    duration-300
-    group-hover:bg-[#343434]
-    group-hover:text-[#d7ff00]
-  "
+              flex
+              h-[70px]
+              w-[70px]
+              shrink-0
+              items-center
+              justify-center
+              rounded-full
+              bg-[#292929]
+              text-[28px]
+              font-medium
+              text-[#c7c7ad]
+              transition
+              duration-300
+              group-hover:bg-[#343434]
+              group-hover:text-[#d7ff00]
+            "
             onClick={(e) => {
               e.stopPropagation();
               openDetails();
@@ -228,6 +250,7 @@ function MemberCard({ member, index, onDelete }) {
           </div>
 
           {/* NAME + CONTACT */}
+
           <div className="min-w-0">
             <h2
               className="
@@ -265,13 +288,15 @@ function MemberCard({ member, index, onDelete }) {
           </div>
         </div>
 
-        {/* THREE DOT BUTTON */}
+        {/* ===================================================
+            THREE DOT BUTTON
+        =================================================== */}
 
         <div className="relative ml-2">
           <motion.button
             whileTap={{ scale: 0.85 }}
             onClick={toggleMenu}
-            aria-label={`Actions for ${member.name}`}
+            aria-label={`${memberCardT.actionsFor} ${member.name}`}
             className={`
               rounded-full
               p-2
@@ -286,7 +311,9 @@ function MemberCard({ member, index, onDelete }) {
             <FiMoreVertical size={25} />
           </motion.button>
 
-          {/* ACTION MENU */}
+          {/* =================================================
+              ACTION MENU
+          ================================================= */}
 
           <AnimatePresence>
             {menuOpen && (
@@ -310,95 +337,107 @@ function MemberCard({ member, index, onDelete }) {
                   duration: 0.15,
                 }}
                 onClick={(e) => e.stopPropagation()}
+                dir={isRTL ? "rtl" : "ltr"}
                 className={`
-        absolute
-        right-0
-        z-[9999]
-        w-[205px]
-        overflow-hidden
-        rounded-[14px]
-        border
-        border-[#3a3a36]
-        bg-[#242424]
-        p-1.5
-        shadow-[0_15px_40px_rgba(0,0,0,0.45)]
-        ${menuDirection === "up" ? "bottom-[48px]" : "top-[48px]"}
-      `}
+                  absolute
+                  z-[9999]
+                  w-[205px]
+                  overflow-hidden
+                  rounded-[14px]
+                  border
+                  border-[#3a3a36]
+                  bg-[#242424]
+                  p-1.5
+                  shadow-[0_15px_40px_rgba(0,0,0,0.45)]
+
+                  ${isRTL ? "left-0" : "right-0"}
+
+                  ${menuDirection === "up" ? "bottom-[48px]" : "top-[48px]"}
+                `}
               >
-                {/* EDIT */}
+                {/* =================================================
+                    EDIT
+                ================================================= */}
 
                 <button
                   onClick={(e) => handleAction("edit", e)}
                   className="
-          flex
-          w-full
-          items-center
-          gap-3
-          rounded-[10px]
-          px-3
-          py-3
-          text-left
-          text-[14px]
-          font-medium
-          text-[#deded2]
-          transition
-          hover:bg-[#303030]
-          hover:text-white
-        "
+                    flex
+                    w-full
+                    items-center
+                    gap-3
+                    rounded-[10px]
+                    px-3
+                    py-3
+                    text-start
+                    text-[14px]
+                    font-medium
+                    text-[#deded2]
+                    transition
+                    hover:bg-[#303030]
+                    hover:text-white
+                  "
                 >
                   <FiEdit2 size={17} />
-                  <span>Edit Member</span>
+
+                  <span>{memberCardT.editMember}</span>
                 </button>
 
-                {/* PAYMENT */}
+                {/* =================================================
+                    PAYMENT
+                ================================================= */}
 
                 <button
                   onClick={(e) => handleAction("payment", e)}
                   className="
-          flex
-          w-full
-          items-center
-          gap-3
-          rounded-[10px]
-          px-3
-          py-3
-          text-left
-          text-[14px]
-          font-medium
-          text-[#deded2]
-          transition
-          hover:bg-[#303030]
-          hover:text-white
-        "
+                    flex
+                    w-full
+                    items-center
+                    gap-3
+                    rounded-[10px]
+                    px-3
+                    py-3
+                    text-start
+                    text-[14px]
+                    font-medium
+                    text-[#deded2]
+                    transition
+                    hover:bg-[#303030]
+                    hover:text-white
+                  "
                 >
                   <FiCreditCard size={17} />
-                  <span>Record Payment</span>
+
+                  <span>{memberCardT.recordPayment}</span>
                 </button>
 
                 <div className="my-1 border-t border-[#3a3a3a]" />
 
-                {/* REMOVE */}
+                {/* =================================================
+                    REMOVE
+                ================================================= */}
 
                 <button
                   onClick={(e) => handleAction("remove", e)}
                   className="
-          flex
-          w-full
-          items-center
-          gap-3
-          rounded-[10px]
-          px-3
-          py-3
-          text-left
-          text-[14px]
-          font-medium
-          text-[#ff8f86]
-          transition
-          hover:bg-[#352323]
-        "
+                    flex
+                    w-full
+                    items-center
+                    gap-3
+                    rounded-[10px]
+                    px-3
+                    py-3
+                    text-start
+                    text-[14px]
+                    font-medium
+                    text-[#ff8f86]
+                    transition
+                    hover:bg-[#352323]
+                  "
                 >
                   <FiTrash2 size={17} />
-                  <span>Remove Member</span>
+
+                  <span>{memberCardT.removeMember}</span>
                 </button>
               </motion.div>
             )}
@@ -406,7 +445,9 @@ function MemberCard({ member, index, onDelete }) {
         </div>
       </div>
 
-      {/* BOTTOM INFORMATION */}
+      {/* =====================================================
+          BOTTOM INFORMATION
+      ===================================================== */}
 
       <div
         className="
@@ -422,22 +463,22 @@ function MemberCard({ member, index, onDelete }) {
         <div>
           <p
             className="
-      mb-1
-      text-[14px]
-      font-medium
-      tracking-[1px]
-      text-[#5e6148]
-    "
+              mb-1
+              text-[14px]
+              font-medium
+              tracking-[1px]
+              text-[#5e6148]
+            "
           >
             {paymentLabel}
           </p>
 
           <p
             className={`
-      text-[20px]
-      font-medium
-      ${status.valueColor}
-    `}
+              text-[20px]
+              font-medium
+              ${status.valueColor}
+            `}
           >
             {paymentValue}
           </p>
@@ -460,6 +501,7 @@ function MemberCard({ member, index, onDelete }) {
           `}
         >
           <StatusIcon size={16} />
+
           {status.text}
         </div>
       </div>
