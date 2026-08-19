@@ -54,6 +54,9 @@ export const createMember = async (req, res) => {
 export const getMembers = async (req, res) => {
   try {
     const members = await prisma.member.findMany({
+      where: {
+        trainerId: req.user.id,
+      },
       orderBy: {
         id: "desc",
       },
@@ -77,9 +80,19 @@ export const getMember = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const member = await prisma.member.findUnique({
+    const memberId = Number(id);
+
+    if (!Number.isInteger(memberId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid member ID",
+      });
+    }
+
+    const member = await prisma.member.findFirst({
       where: {
-        id: Number(id),
+        id: memberId,
+        trainerId: req.user.id,
       },
     });
 
@@ -111,23 +124,24 @@ export const updateMember = async (req, res) => {
   try {
     const memberId = Number(id);
 
-    if (!memberId) {
+    if (!Number.isInteger(memberId)) {
       return res.status(400).json({
         success: false,
         message: "Invalid member ID",
       });
     }
 
-    if (!name || !phone || !monthlyFee) {
+    if (!name?.trim() || !phone?.trim() || !monthlyFee) {
       return res.status(400).json({
         success: false,
         message: "name, phone, and monthlyFee are required",
       });
     }
 
-    const existingMember = await prisma.member.findUnique({
+    const existingMember = await prisma.member.findFirst({
       where: {
         id: memberId,
+        trainerId: req.user.id,
       },
     });
 
@@ -143,12 +157,12 @@ export const updateMember = async (req, res) => {
         id: memberId,
       },
       data: {
-        name,
-        phone,
-        email: email || null,
+        name: name.trim(),
+        phone: phone.trim(),
+        email: email?.trim() || null,
         monthlyFee: Number(monthlyFee),
         startDate: startDate ? new Date(startDate) : existingMember.startDate,
-        internalNotes: internalNotes || null,
+        internalNotes: internalNotes?.trim() || null,
       },
     });
 
@@ -180,16 +194,17 @@ export const deleteMember = async (req, res) => {
   try {
     const memberId = Number(id);
 
-    if (!memberId) {
+    if (!Number.isInteger(memberId)) {
       return res.status(400).json({
         success: false,
         message: "Invalid member ID",
       });
     }
 
-    const existingMember = await prisma.member.findUnique({
+    const existingMember = await prisma.member.findFirst({
       where: {
         id: memberId,
+        trainerId: req.user.id,
       },
     });
 
