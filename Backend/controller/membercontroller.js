@@ -1,15 +1,78 @@
 import prisma from "../config/prisma.js";
 
+// CREATE MEMBER
+
 export const createMember = async (req, res) => {
-  const { name, phone, email, monthlyFee, startDate, internalNotes } = req.body;
+  console.log("🔥 CREATE MEMBER CONTROLLER HIT");
+  const {
+    name,
+    phone,
+    email,
+    monthlyFee,
+    startDate,
+    internalNotes,
+    age,
+    height,
+    weight,
+    diet,
+    exerciseType,
+    image,
+  } = req.body;
+
+  console.log("BACKEND req.body:", req.body);
+
+  console.log("BACKEND extracted values:", {
+    age,
+    height,
+    weight,
+    diet,
+    exerciseType,
+    internalNotes,
+  });
 
   try {
-    if (!name || !phone || !monthlyFee) {
+    // Required fields
+    if (!name?.trim() || !phone?.trim() || !monthlyFee) {
       return res.status(400).json({
         success: false,
         message: "name, phone, and monthlyFee are required",
       });
     }
+
+    // Validate optional numeric fields
+    if (age !== undefined && age !== null && age !== "") {
+      const parsedAge = Number(age);
+
+      if (!Number.isInteger(parsedAge) || parsedAge < 1 || parsedAge > 120) {
+        return res.status(400).json({
+          success: false,
+          message: "Age must be a valid number between 1 and 120",
+        });
+      }
+    }
+
+    if (height !== undefined && height !== null && height !== "") {
+      const parsedHeight = Number(height);
+
+      if (!Number.isFinite(parsedHeight) || parsedHeight <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Height must be a valid positive number",
+        });
+      }
+    }
+
+    if (weight !== undefined && weight !== null && weight !== "") {
+      const parsedWeight = Number(weight);
+
+      if (!Number.isFinite(parsedWeight) || parsedWeight <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Weight must be a valid positive number",
+        });
+      }
+    }
+    console.log("CREATE MEMBER BODY:", req.body);
 
     const member = await prisma.member.create({
       data: {
@@ -17,10 +80,32 @@ export const createMember = async (req, res) => {
         phone: phone.trim(),
         email: email?.trim() || null,
         monthlyFee: Number(monthlyFee),
+
         startDate: startDate ? new Date(startDate) : new Date(),
+
         internalNotes: internalNotes?.trim() || null,
 
-        // ⭐ Connect member to logged-in trainer
+        // Member information
+        age:
+          age !== undefined && age !== null && age !== "" ? Number(age) : null,
+
+        height:
+          height !== undefined && height !== null && height !== ""
+            ? Number(height)
+            : null,
+
+        weight:
+          weight !== undefined && weight !== null && weight !== ""
+            ? Number(weight)
+            : null,
+
+        diet: diet?.trim() || null,
+
+        exerciseType: exerciseType?.trim() || null,
+
+        image: image?.trim() || null,
+
+        // Connect member to logged-in trainer
         trainer: {
           connect: {
             id: req.user.id,
@@ -28,6 +113,8 @@ export const createMember = async (req, res) => {
         },
       },
     });
+
+    console.log("CREATED MEMBER:", member);
 
     return res.status(201).json({
       success: true,
@@ -51,12 +138,15 @@ export const createMember = async (req, res) => {
   }
 };
 
+// GET ALL MEMBERS
+
 export const getMembers = async (req, res) => {
   try {
     const members = await prisma.member.findMany({
       where: {
         trainerId: req.user.id,
       },
+
       orderBy: {
         id: "desc",
       },
@@ -75,6 +165,8 @@ export const getMembers = async (req, res) => {
     });
   }
 };
+
+// GET SINGLE MEMBER
 
 export const getMember = async (req, res) => {
   const { id } = req.params;
@@ -103,6 +195,8 @@ export const getMember = async (req, res) => {
       });
     }
 
+    console.log(member);
+
     return res.status(200).json({
       success: true,
       member,
@@ -117,9 +211,25 @@ export const getMember = async (req, res) => {
   }
 };
 
+// UPDATE MEMBER
+
 export const updateMember = async (req, res) => {
   const { id } = req.params;
-  const { name, phone, email, monthlyFee, startDate, internalNotes } = req.body;
+
+  const {
+    name,
+    phone,
+    email,
+    monthlyFee,
+    startDate,
+    internalNotes,
+    age,
+    height,
+    weight,
+    diet,
+    exerciseType,
+    image,
+  } = req.body;
 
   try {
     const memberId = Number(id);
@@ -131,6 +241,7 @@ export const updateMember = async (req, res) => {
       });
     }
 
+    // Required fields
     if (!name?.trim() || !phone?.trim() || !monthlyFee) {
       return res.status(400).json({
         success: false,
@@ -138,6 +249,41 @@ export const updateMember = async (req, res) => {
       });
     }
 
+    // Validate optional numeric fields
+    if (age !== undefined && age !== null && age !== "") {
+      const parsedAge = Number(age);
+
+      if (!Number.isInteger(parsedAge) || parsedAge < 1 || parsedAge > 120) {
+        return res.status(400).json({
+          success: false,
+          message: "Age must be a valid number between 1 and 120",
+        });
+      }
+    }
+
+    if (height !== undefined && height !== null && height !== "") {
+      const parsedHeight = Number(height);
+
+      if (!Number.isFinite(parsedHeight) || parsedHeight <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Height must be a valid positive number",
+        });
+      }
+    }
+
+    if (weight !== undefined && weight !== null && weight !== "") {
+      const parsedWeight = Number(weight);
+
+      if (!Number.isFinite(parsedWeight) || parsedWeight <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Weight must be a valid positive number",
+        });
+      }
+    }
+
+    // Make sure the member belongs to the logged-in trainer
     const existingMember = await prisma.member.findFirst({
       where: {
         id: memberId,
@@ -156,13 +302,36 @@ export const updateMember = async (req, res) => {
       where: {
         id: memberId,
       },
+
       data: {
         name: name.trim(),
         phone: phone.trim(),
         email: email?.trim() || null,
         monthlyFee: Number(monthlyFee),
+
         startDate: startDate ? new Date(startDate) : existingMember.startDate,
+
         internalNotes: internalNotes?.trim() || null,
+
+        // Member information
+        age:
+          age !== undefined && age !== null && age !== "" ? Number(age) : null,
+
+        height:
+          height !== undefined && height !== null && height !== ""
+            ? Number(height)
+            : null,
+
+        weight:
+          weight !== undefined && weight !== null && weight !== ""
+            ? Number(weight)
+            : null,
+
+        diet: diet?.trim() || null,
+
+        exerciseType: exerciseType?.trim() || null,
+
+        image: image?.trim() || null,
       },
     });
 
@@ -188,6 +357,8 @@ export const updateMember = async (req, res) => {
   }
 };
 
+// DELETE MEMBER
+
 export const deleteMember = async (req, res) => {
   const { id } = req.params;
 
@@ -201,6 +372,7 @@ export const deleteMember = async (req, res) => {
       });
     }
 
+    // Make sure the member belongs to the logged-in trainer
     const existingMember = await prisma.member.findFirst({
       where: {
         id: memberId,
