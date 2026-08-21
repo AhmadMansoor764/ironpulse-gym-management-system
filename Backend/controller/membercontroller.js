@@ -145,10 +145,13 @@ export const createMember = async (req, res) => {
         });
 
       if (uploadError) {
-        console.error("Supabase member image upload error:", uploadError);
+        console.error("❌ SUPABASE UPLOAD ERROR");
+        console.error("Message:", uploadError.message);
+        console.error("Details:", uploadError);
+        console.error("Bucket:", "gym-profile-images");
+        console.error("File name:", fileName);
+        console.error("File type:", req.file.mimetype);
 
-        // Member was already created.
-        // We return an error because the image failed.
         return res.status(500).json({
           success: false,
           message:
