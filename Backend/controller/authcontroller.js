@@ -1,7 +1,7 @@
 import prisma from "../config/prisma.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import transporter from "../config/mail.js";
+import resend from "../config/resend.js";
 
 export const register = async (req, res) => {
   const { name, password, email } = req.body;
@@ -206,9 +206,9 @@ export const forgotPassword = async (req, res) => {
       },
     });
 
-    await transporter.sendMail({
-      from: `"IronPulse" <${process.env.EMAIL_USER}>`,
-      to: user.email,
+    const { data, error } = await resend.emails.send({
+      from: "IronPulse <onboarding@resend.dev>",
+      to: [user.email],
       subject: "IronPulse Password Reset Code",
       text: `Your IronPulse password reset code is ${resetCode}. This code expires in 10 minutes.`,
       html: `
@@ -254,6 +254,11 @@ export const forgotPassword = async (req, res) => {
         </div>
       `,
     });
+
+    if (error) {
+      console.error("RESEND ERROR:", error);
+      throw new Error(error.message);
+    }
 
     return res.status(200).json({
       success: true,
