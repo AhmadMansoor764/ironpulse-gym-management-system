@@ -260,11 +260,13 @@ export const forgotPassword = async (req, res) => {
       message: "If this email is registered, a reset code has been sent.",
     });
   } catch (error) {
-    console.error("FORGOT PASSWORD ERROR:", error);
+    console.error("========== FORGOT PASSWORD ERROR ==========");
+    console.error(error);
+    console.error("============================================");
 
     return res.status(500).json({
       success: false,
-      message: "Unable to process your request. Please try again.",
+      message: error.message || "Unable to process your request.",
     });
   }
 };
