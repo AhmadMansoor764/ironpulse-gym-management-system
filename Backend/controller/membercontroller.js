@@ -138,6 +138,11 @@ export const createMember = async (req, res) => {
       console.log("📦 File size:", req.file.size);
       console.log("📝 MIME type:", req.file.mimetype);
 
+      const { data, error } = await supabase.storage.listBuckets();
+
+      console.log("SUPABASE BUCKETS:", data);
+      console.log("SUPABASE BUCKET ERROR:", error);
+
       const extension =
         req.file.originalname.split(".").pop()?.toLowerCase() || "jpg";
 
