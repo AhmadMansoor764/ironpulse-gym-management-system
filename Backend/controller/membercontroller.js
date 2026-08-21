@@ -1,9 +1,12 @@
 import prisma from "../config/prisma.js";
+import { randomUUID } from "crypto";
+import supabase from "../config/supabase.js";
 
 // CREATE MEMBER
 
 export const createMember = async (req, res) => {
   console.log("🔥 CREATE MEMBER CONTROLLER HIT");
+
   const {
     name,
     phone,
@@ -16,22 +19,16 @@ export const createMember = async (req, res) => {
     weight,
     diet,
     exerciseType,
-    image,
   } = req.body;
 
   console.log("BACKEND req.body:", req.body);
-
-  console.log("BACKEND extracted values:", {
-    age,
-    height,
-    weight,
-    diet,
-    exerciseType,
-    internalNotes,
-  });
+  console.log("BACKEND req.file:", req.file);
 
   try {
-    // Required fields
+    // ---------------------------------------------
+    // 1. Required fields
+    // ---------------------------------------------
+
     if (!name?.trim() || !phone?.trim() || !monthlyFee) {
       return res.status(400).json({
         success: false,
@@ -39,7 +36,10 @@ export const createMember = async (req, res) => {
       });
     }
 
-    // Validate optional numeric fields
+    // ---------------------------------------------
+    // 2. Validate optional numeric fields
+    // ---------------------------------------------
+
     if (age !== undefined && age !== null && age !== "") {
       const parsedAge = Number(age);
 
@@ -72,13 +72,19 @@ export const createMember = async (req, res) => {
         });
       }
     }
-    console.log("CREATE MEMBER BODY:", req.body);
+
+    // ---------------------------------------------
+    // 3. Create member first
+    // ---------------------------------------------
 
     const member = await prisma.member.create({
       data: {
         name: name.trim(),
+
         phone: phone.trim(),
+
         email: email?.trim() || null,
+
         monthlyFee: Number(monthlyFee),
 
         startDate: startDate ? new Date(startDate) : new Date(),
@@ -103,7 +109,9 @@ export const createMember = async (req, res) => {
 
         exerciseType: exerciseType?.trim() || null,
 
-        image: image?.trim() || null,
+        // Image starts as null.
+        // We will upload it immediately below.
+        image: null,
 
         // Connect member to logged-in trainer
         trainer: {
@@ -115,6 +123,79 @@ export const createMember = async (req, res) => {
     });
 
     console.log("CREATED MEMBER:", member);
+
+    // ---------------------------------------------
+    // 4. Upload image if one was selected
+    // ---------------------------------------------
+
+    if (req.file) {
+      console.log("📸 Member image detected. Uploading...");
+
+      const extension =
+        req.file.originalname.split(".").pop()?.toLowerCase() || "jpg";
+
+      const fileName = `member-${member.id}-${randomUUID()}.${extension}`;
+
+      // Upload to Supabase
+      const { error: uploadError } = await supabase.storage
+        .from("gym-profile-images")
+        .upload(fileName, req.file.buffer, {
+          contentType: req.file.mimetype,
+          upsert: false,
+        });
+
+      if (uploadError) {
+        console.error("Supabase member image upload error:", uploadError);
+
+        // Member was already created.
+        // We return an error because the image failed.
+        return res.status(500).json({
+          success: false,
+          message:
+            "Member was created, but the profile image could not be uploaded.",
+          member,
+          error: uploadError.message,
+        });
+      }
+
+      // ---------------------------------------------
+      // 5. Get Supabase public URL
+      // ---------------------------------------------
+
+      const { data: publicUrlData } = supabase.storage
+        .from("gym-profile-images")
+        .getPublicUrl(fileName);
+
+      const imageUrl = publicUrlData.publicUrl;
+
+      console.log("SUPABASE IMAGE URL:", imageUrl);
+
+      // ---------------------------------------------
+      // 6. Save image URL to member
+      // ---------------------------------------------
+
+      const updatedMember = await prisma.member.update({
+        where: {
+          id: member.id,
+        },
+
+        data: {
+          image: imageUrl,
+        },
+      });
+
+      console.log("MEMBER WITH IMAGE:", updatedMember);
+
+      return res.status(201).json({
+        success: true,
+        message: "Member created successfully",
+        member: updatedMember,
+      });
+    }
+
+    // ---------------------------------------------
+    // 7. No image selected
+    // ---------------------------------------------
 
     return res.status(201).json({
       success: true,
@@ -403,6 +484,96 @@ export const deleteMember = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Unable to delete member. Please try again.",
+    });
+  }
+};
+
+export const uploadMemberProfileImage = async (req, res) => {
+  try {
+    // 1. Check if image exists
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Please select an image",
+      });
+    }
+
+    // 2. Get member ID from URL
+    const memberId = req.params.id;
+
+    // 3. Check if member exists
+    const existingMember = await prisma.member.findUnique({
+      where: {
+        id: memberId,
+      },
+    });
+
+    if (!existingMember) {
+      return res.status(404).json({
+        success: false,
+        message: "Member not found",
+      });
+    }
+
+    // 4. Get file extension
+    const extension =
+      req.file.originalname.split(".").pop()?.toLowerCase() || "jpg";
+
+    // 5. Create unique filename
+    const fileName = `member-${memberId}-${randomUUID()}.${extension}`;
+
+    // 6. Upload to Supabase
+    const { error: uploadError } = await supabase.storage
+      .from("gym-profile-images")
+      .upload(fileName, req.file.buffer, {
+        contentType: req.file.mimetype,
+        upsert: false,
+      });
+
+    if (uploadError) {
+      console.error("Supabase upload error:", uploadError);
+
+      return res.status(500).json({
+        success: false,
+        message: "Failed to upload member image",
+        error: uploadError.message,
+      });
+    }
+
+    // 7. Get public URL
+    const { data: publicUrlData } = supabase.storage
+      .from("gym-profile-images")
+      .getPublicUrl(fileName);
+
+    const imageUrl = publicUrlData.publicUrl;
+
+    // 8. Save URL in database
+    const member = await prisma.member.update({
+      where: {
+        id: memberId,
+      },
+      data: {
+        image: imageUrl,
+      },
+      select: {
+        id: true,
+        image: true,
+      },
+    });
+
+    // 9. Send response
+    return res.status(200).json({
+      success: true,
+      message: "Member profile image uploaded successfully",
+      data: member,
+    });
+  } catch (error) {
+    console.error("Member image upload error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Something went wrong while uploading member image",
+      error: error.message,
     });
   }
 };

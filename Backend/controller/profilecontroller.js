@@ -1,4 +1,4 @@
-import crypto from "crypto";
+import { randomUUID } from "crypto";
 import prisma from "../config/prisma.js";
 import supabase from "../config/supabase.js";
 import bcrypt from "bcryptjs";
@@ -87,7 +87,10 @@ export const updateProfile = async (req, res) => {
 
 export const uploadProfileImage = async (req, res) => {
   try {
-    // Check whether an image was actually uploaded
+    // ---------------------------------------------
+    // 1. Check if image was uploaded
+    // ---------------------------------------------
+
     if (!req.file) {
       return res.status(400).json({
         success: false,
@@ -95,20 +98,32 @@ export const uploadProfileImage = async (req, res) => {
       });
     }
 
+    // ---------------------------------------------
+    // 2. Get logged-in trainer ID
+    // ---------------------------------------------
+
     const trainerId = req.user.id;
 
-    // Get the file extension
-    const extension = req.file.originalname.split(".").pop();
+    // ---------------------------------------------
+    // 3. Get file extension
+    // ---------------------------------------------
 
-    // Create a unique filename
-    const fileName = `trainer-${trainerId}-${crypto.randomUUID()}.${extension}`;
+    const extension =
+      req.file.originalname.split(".").pop()?.toLowerCase() || "jpg";
 
-    const filePath = `gym-profile-image/${fileName}`;
+    // ---------------------------------------------
+    // 4. Create unique filename
+    // ---------------------------------------------
 
-    // Upload to Supabase Storage
+    const fileName = `trainer-${trainerId}-${randomUUID()}.${extension}`;
+
+    // ---------------------------------------------
+    // 5. Upload to Supabase
+    // ---------------------------------------------
+
     const { error: uploadError } = await supabase.storage
       .from("gym-profile-image")
-      .upload(filePath, req.file.buffer, {
+      .upload(fileName, req.file.buffer, {
         contentType: req.file.mimetype,
         upsert: false,
       });
@@ -119,17 +134,24 @@ export const uploadProfileImage = async (req, res) => {
       return res.status(500).json({
         success: false,
         message: "Failed to upload image",
+        error: uploadError.message,
       });
     }
 
-    // Get public URL
+    // ---------------------------------------------
+    // 6. Get public URL
+    // ---------------------------------------------
+
     const { data: publicUrlData } = supabase.storage
       .from("gym-profile-image")
-      .getPublicUrl(filePath);
+      .getPublicUrl(fileName);
 
     const imageUrl = publicUrlData.publicUrl;
 
-    // Save image URL in database
+    // ---------------------------------------------
+    // 7. Save image URL in database
+    // ---------------------------------------------
+
     const trainer = await prisma.trainer.update({
       where: {
         id: trainerId,
@@ -143,6 +165,10 @@ export const uploadProfileImage = async (req, res) => {
       },
     });
 
+    // ---------------------------------------------
+    // 8. Send response
+    // ---------------------------------------------
+
     return res.status(200).json({
       success: true,
       message: "Profile image uploaded successfully",
@@ -154,10 +180,10 @@ export const uploadProfileImage = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Something went wrong while uploading profile image",
+      error: error.message,
     });
   }
 };
-
 export const changePassword = async (req, res) => {
   const { currentPassword, newPassword, confirmPassword } = req.body;
 
