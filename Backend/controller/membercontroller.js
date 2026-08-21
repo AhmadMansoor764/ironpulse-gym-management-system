@@ -128,15 +128,24 @@ export const createMember = async (req, res) => {
     // 4. Upload image if one was selected
     // ---------------------------------------------
 
+    // ---------------------------------------------
+    // 4. Upload image if one was selected
+    // ---------------------------------------------
+
     if (req.file) {
       console.log("📸 Member image detected. Uploading...");
+      console.log("📁 File name:", req.file.originalname);
+      console.log("📦 File size:", req.file.size);
+      console.log("📝 MIME type:", req.file.mimetype);
 
       const extension =
         req.file.originalname.split(".").pop()?.toLowerCase() || "jpg";
 
       const fileName = `member-${member.id}-${randomUUID()}.${extension}`;
 
-      // Upload to Supabase
+      console.log("📤 Uploading to bucket: gym-member-images");
+      console.log("📄 File name:", fileName);
+
       const { error: uploadError } = await supabase.storage
         .from("gym-member-images")
         .upload(fileName, req.file.buffer, {
@@ -145,51 +154,42 @@ export const createMember = async (req, res) => {
         });
 
       if (uploadError) {
-        console.error("❌❌❌ SUPABASE UPLOAD ERROR ❌❌❌");
-        console.error(uploadError);
+        console.error("❌ Supabase member image upload error:", uploadError);
 
         return res.status(500).json({
           success: false,
-          message: uploadError.message,
-          supabaseError: uploadError,
+          message: "Supabase image upload failed",
+          error: uploadError.message,
         });
       }
+
+      console.log("✅ Image uploaded successfully");
+
+      const { data: publicUrlData } = supabase.storage
+        .from("gym-member-images")
+        .getPublicUrl(fileName);
+
+      const imageUrl = publicUrlData.publicUrl;
+
+      console.log("🌐 SUPABASE IMAGE URL:", imageUrl);
+
+      const updatedMember = await prisma.member.update({
+        where: {
+          id: member.id,
+        },
+        data: {
+          image: imageUrl,
+        },
+      });
+
+      console.log("✅ MEMBER WITH IMAGE:", updatedMember);
+
+      return res.status(201).json({
+        success: true,
+        message: "Member created successfully",
+        member: updatedMember,
+      });
     }
-
-    // ---------------------------------------------
-    // 5. Get Supabase public URL
-    // ---------------------------------------------
-
-    const { data: publicUrlData } = supabase.storage
-      .from("gym-member-images")
-      .getPublicUrl(fileName);
-
-    const imageUrl = publicUrlData.publicUrl;
-
-    console.log("SUPABASE IMAGE URL:", imageUrl);
-
-    // ---------------------------------------------
-    // 6. Save image URL to member
-    // ---------------------------------------------
-
-    const updatedMember = await prisma.member.update({
-      where: {
-        id: member.id,
-      },
-
-      data: {
-        image: imageUrl,
-      },
-    });
-
-    console.log("MEMBER WITH IMAGE:", updatedMember);
-
-    return res.status(201).json({
-      success: true,
-      message: "Member created successfully",
-      member: updatedMember,
-    });
-
     // ---------------------------------------------
     // 7. No image selected
     // ---------------------------------------------
