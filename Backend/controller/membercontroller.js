@@ -138,7 +138,7 @@ export const createMember = async (req, res) => {
 
       // Upload to Supabase
       const { error: uploadError } = await supabase.storage
-        .from("gym-profile-images")
+        .from("gym-member-images")
         .upload(fileName, req.file.buffer, {
           contentType: req.file.mimetype,
           upsert: false,
