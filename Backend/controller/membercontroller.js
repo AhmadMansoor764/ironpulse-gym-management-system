@@ -154,12 +154,16 @@ export const createMember = async (req, res) => {
         });
 
       if (uploadError) {
-        console.error("❌ Supabase member image upload error:", uploadError);
+        console.error("❌ SUPABASE UPLOAD ERROR");
+        console.error("Message:", uploadError.message);
+        console.error("Name:", uploadError.name);
+        console.error("Details:", uploadError);
 
         return res.status(500).json({
           success: false,
           message: "Supabase image upload failed",
           error: uploadError.message,
+          details: uploadError,
         });
       }
 
