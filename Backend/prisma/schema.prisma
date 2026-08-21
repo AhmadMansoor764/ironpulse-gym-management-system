@@ -7,36 +7,44 @@ datasource db {
 }
 
 model trainer {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  phone      String?
-  image      String?
+  id         Int       @id @default(autoincrement())
+  name       String
+  email      String    @unique
+  password   String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
   about      String?
-  gymName    String?
   gymAddress String?
+  gymName    String?
+  image      String?
+  phone      String?
 
-  members  member[]
-  expenses expense[]
+  resetCode       String?
+  resetCodeExpiry DateTime?
+
+  expenses   expense[]
+  members    member[]
 }
 
 model member {
-  id            Int      @id @default(autoincrement())
+  id            Int       @id @default(autoincrement())
   name          String
   phone         String
-  email         String?  @unique
+  email         String?   @unique
   monthlyFee    Decimal
-  startDate     DateTime @default(now())
+  startDate     DateTime  @default(now())
   internalNotes String?
 
-  trainerId Int
-  trainer   trainer @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  // Member information
+  age           Int?
+  height        Float?
+  weight        Float?
+  diet          String?
+  image         String?
 
-  payments payment[]
+  trainerId     Int
+  trainer       trainer   @relation(fields: [trainerId], references: [id], onDelete: Cascade)
+  payments      payment[]
 
   @@index([trainerId])
 }
@@ -45,12 +53,10 @@ model payment {
   id           Int      @id @default(autoincrement())
   amount       Decimal
   paymentMonth DateTime
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  memberId Int
-  member   member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  memberId     Int
+  member       member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
 
   @@unique([memberId, paymentMonth])
   @@index([memberId])
@@ -63,12 +69,10 @@ model expense {
   category    String
   amount      Decimal
   expenseDate DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  trainerId   Int
+  trainer     trainer  @relation(fields: [trainerId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  trainerId Int
-  trainer   trainer @relation(fields: [trainerId], references: [id], onDelete: Cascade)
-
- @@index([trainerId, expenseDate])
+  @@index([trainerId, expenseDate])
 }

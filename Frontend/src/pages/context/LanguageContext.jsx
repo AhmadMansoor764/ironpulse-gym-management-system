@@ -700,6 +700,8 @@ const translations = {
 
       somethingWentWrong: "Something went wrong while processing your request.",
     },
+
+    installApp: "Install App",
   },
 
   // =========================================================
@@ -1402,6 +1404,7 @@ const translations = {
 
       somethingWentWrong: "هنگام پردازش درخواست شما مشکلی پیش آمد.",
     },
+    installApp: "نصب برنامه",
   },
 
   // =========================================================
@@ -2104,6 +2107,7 @@ const translations = {
 
       somethingWentWrong: "ستاسو د غوښتنې د پروسس پر مهال ستونزه رامنځته شوه.",
     },
+    installApp: "اپلیکیشن نصب کړئ",
   },
 };
 

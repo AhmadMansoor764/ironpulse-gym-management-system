@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+
 import {
   FaBolt,
   FaBookOpen,
@@ -6,13 +7,36 @@ import {
   FaChartLine,
   FaArrowRight,
   FaCheckCircle,
+  FaEllipsisV,
 } from "react-icons/fa";
+
 import { Link } from "react-router-dom";
+
 import heroimage from "../../assets/heroimage.png";
+
 import { useLanguage } from "../context/LanguageContext";
+
+import InstallAppButton from "../installPage/InstallAppButton";
 
 const LandingPage = () => {
   const { language, setLanguage, t } = useLanguage();
+
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // ------------------------------------------------------------
+  // RTL support for Dari and Pashto
+  // ------------------------------------------------------------
+
+  useEffect(() => {
+    document.documentElement.dir =
+      language === "fa" || language === "ps" ? "rtl" : "ltr";
+
+    document.documentElement.lang = language;
+  }, [language]);
+
+  // ------------------------------------------------------------
+  // Features
+  // ------------------------------------------------------------
 
   const features = [
     {
@@ -32,6 +56,14 @@ const LandingPage = () => {
     },
   ];
 
+  // ------------------------------------------------------------
+  // Mobile menu close
+  // ------------------------------------------------------------
+
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+  };
+
   return (
     <div className="min-h-screen overflow-x-hidden bg-[#101010] text-white">
       {/* =========================================================
@@ -41,7 +73,9 @@ const LandingPage = () => {
       <header className="border-b border-[#303030] bg-[#101010]">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <nav className="flex h-16 items-center justify-between sm:h-[72px]">
-            {/* Logo */}
+            {/* =====================================================
+                LOGO
+            ===================================================== */}
 
             <Link to="/" className="group flex items-center gap-2">
               <div className="flex items-center justify-center">
@@ -68,10 +102,13 @@ const LandingPage = () => {
               </span>
             </Link>
 
-            {/* Desktop navigation */}
+            {/* =====================================================
+                DESKTOP NAVIGATION
+                md and above
+            ===================================================== */}
 
             <div className="hidden items-center gap-3 md:flex">
-              {/* Language Selector */}
+              {/* Language */}
 
               <select
                 value={language}
@@ -92,9 +129,11 @@ const LandingPage = () => {
                 "
               >
                 <option value="en">English</option>
-                <option value="fa">فارسی</option>
+                <option value="fa">دری</option>
                 <option value="ps">پښتو</option>
               </select>
+
+              {/* Login */}
 
               <Link
                 to="/login"
@@ -115,6 +154,12 @@ const LandingPage = () => {
                 {t.login}
               </Link>
 
+              {/* Install App */}
+
+              <InstallAppButton label={t.installApp} />
+
+              {/* Get Started */}
+
               <Link
                 to="/signup"
                 className="
@@ -133,42 +178,148 @@ const LandingPage = () => {
               </Link>
             </div>
 
-            {/* Mobile navigation */}
-
-            <div className="flex items-center gap-3 md:hidden">
-              {/* Mobile Language Selector */}
-
-              <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
+            {/* =====================================================
+    MOBILE NAVIGATION
+===================================================== */}
+            <div className="relative flex items-center md:hidden">
+              {/* Three Dot Menu ONLY */}
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen((prev) => !prev)}
                 className="
-                  rounded-lg
-                  border
-                  border-[#404040]
-                  bg-[#171717]
-                  px-2
-                  py-1.5
-                  text-xs
-                  font-semibold
-                  text-white
-                  outline-none
-                "
+      flex
+      h-9
+      w-9
+      items-center
+      justify-center
+      rounded-lg
+      border
+      border-[#404040]
+      bg-[#171717]
+      text-lg
+      text-white
+      transition
+      hover:border-[#c6ff00]
+      hover:text-[#c6ff00]
+    "
+                aria-label="Open menu"
+                aria-expanded={mobileMenuOpen}
               >
-                <option value="en">EN</option>
-                <option value="fa">FA</option>
-                <option value="ps">PS</option>
-              </select>
+                <FaEllipsisV />
+              </button>
 
-              <Link
-                to="/login"
-                className="
-                  text-sm
-                  font-semibold
-                  text-[#c6ff00]
-                "
-              >
-                {t.login}
-              </Link>
+              {/* ===================================================
+      MOBILE DROPDOWN
+  =================================================== */}
+              {mobileMenuOpen && (
+                <div
+                  className="
+        absolute
+        right-0
+        top-12
+        z-50
+        w-60
+        rounded-xl
+        border
+        border-[#363636]
+        bg-[#171717]
+        p-2
+        shadow-2xl
+      "
+                >
+                  {/* LANGUAGE */}
+                  <div className="px-3 py-2">
+                    <p className="mb-2 text-xs font-semibold text-[#888]">
+                      {language === "fa"
+                        ? "زبان"
+                        : language === "ps"
+                          ? "ژبه"
+                          : "Language"}
+                    </p>
+
+                    <select
+                      value={language}
+                      onChange={(e) => setLanguage(e.target.value)}
+                      className="
+            w-full
+            rounded-lg
+            border
+            border-[#404040]
+            bg-[#202020]
+            px-3
+            py-2.5
+            text-sm
+            font-semibold
+            text-white
+            outline-none
+            transition
+            focus:border-[#c6ff00]
+          "
+                    >
+                      <option value="en">English</option>
+                      <option value="fa">دری</option>
+                      <option value="ps">پښتو</option>
+                    </select>
+                  </div>
+
+                  <div className="my-1 border-t border-[#303030]" />
+
+                  {/* LOGIN */}
+                  <Link
+                    to="/login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="
+          flex
+          w-full
+          items-center
+          gap-3
+          rounded-lg
+          px-3
+          py-2.5
+          text-sm
+          font-semibold
+          text-white
+          transition
+          hover:bg-[#252525]
+          hover:text-[#c6ff00]
+        "
+                  >
+                    <span className="text-[#c6ff00]">→</span>
+                    <span>{t.login}</span>
+                  </Link>
+
+                  {/* INSTALL APP */}
+                  <InstallAppButton
+                    mobile
+                    label={t.installApp}
+                    onInstalled={() => setMobileMenuOpen(false)}
+                  />
+
+                  {/* GET STARTED */}
+                  <Link
+                    to="/signup"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="
+          flex
+          w-full
+          items-center
+          gap-3
+          rounded-lg
+          px-3
+          py-2.5
+          text-sm
+          font-semibold
+          text-white
+          transition
+          hover:bg-[#252525]
+          hover:text-[#c6ff00]
+        "
+                  >
+                    <span className="text-[#c6ff00]">→</span>
+                    <span>{t.getStarted}</span>
+                  </Link>
+                </div>
+              )}
             </div>
           </nav>
         </div>
@@ -180,7 +331,7 @@ const LandingPage = () => {
 
       <main>
         {/* =========================================================
-            HERO SECTION
+            HERO
         ========================================================= */}
 
         <section
@@ -231,12 +382,10 @@ const LandingPage = () => {
                 lg:gap-16
               "
             >
-              {/* =================================================
-                  HERO CONTENT
-              ================================================= */}
+              {/* HERO CONTENT */}
 
               <div className="text-center lg:text-left">
-                {/* Small badge */}
+                {/* Badge */}
 
                 <div
                   className="
@@ -320,6 +469,8 @@ const LandingPage = () => {
                     lg:justify-start
                   "
                 >
+                  {/* Get Started */}
+
                   <Link
                     to="/signup"
                     className="
@@ -345,6 +496,8 @@ const LandingPage = () => {
 
                     <FaArrowRight className="text-xs" />
                   </Link>
+
+                  {/* Login */}
 
                   <Link
                     to="/login"
@@ -373,9 +526,7 @@ const LandingPage = () => {
                 </div>
               </div>
 
-              {/* =================================================
-                  HERO IMAGE
-              ================================================= */}
+              {/* HERO IMAGE */}
 
               <div
                 className="
@@ -386,8 +537,6 @@ const LandingPage = () => {
                   lg:mx-0
                 "
               >
-                {/* Image glow */}
-
                 <div
                   className="
                     pointer-events-none
@@ -398,8 +547,6 @@ const LandingPage = () => {
                     blur-[70px]
                   "
                 />
-
-                {/* Image container */}
 
                 <div
                   className="
@@ -445,8 +592,6 @@ const LandingPage = () => {
               lg:py-16
             "
           >
-            {/* Section heading */}
-
             <div className="text-center">
               <p
                 className="
@@ -488,7 +633,7 @@ const LandingPage = () => {
               </p>
             </div>
 
-            {/* Feature cards */}
+            {/* Feature Cards */}
 
             <div
               className="
@@ -520,8 +665,6 @@ const LandingPage = () => {
                       sm:p-6
                     "
                   >
-                    {/* Icon */}
-
                     <div
                       className="
                         flex
@@ -547,8 +690,6 @@ const LandingPage = () => {
                       />
                     </div>
 
-                    {/* Title */}
-
                     <h3
                       className="
                         mt-5
@@ -560,8 +701,6 @@ const LandingPage = () => {
                     >
                       {feature.title}
                     </h3>
-
-                    {/* Description */}
 
                     <p
                       className="
@@ -585,7 +724,13 @@ const LandingPage = () => {
             CTA
         ========================================================= */}
 
-        <section className="border-b border-[#303030] bg-[#1b1b1b]">
+        <section
+          className="
+            border-b
+            border-[#303030]
+            bg-[#1b1b1b]
+          "
+        >
           <div
             className="
               mx-auto
@@ -692,7 +837,7 @@ const LandingPage = () => {
               gap-5
             "
           >
-            {/* Footer logo */}
+            {/* Footer Logo */}
 
             <Link to="/" className="flex items-center gap-2">
               <FaBolt className="text-sm text-[#c6ff00]" />
@@ -700,7 +845,7 @@ const LandingPage = () => {
               <span className="text-sm font-bold">IronPulse</span>
             </Link>
 
-            {/* Footer links */}
+            {/* Footer Links */}
 
             <div className="flex items-center gap-5">
               <Link

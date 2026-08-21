@@ -44,46 +44,31 @@ const ForgotPassword = () => {
     try {
       setLoading(true);
 
-      /*
-        ==========================================
-        BACKEND WILL BE CONNECTED HERE
-        ==========================================
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/forgot-password`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email }),
+        },
+      );
 
-        Later you will use something like:
+      const data = await response.json();
 
-        const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/auth/trainer/forgot-password`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ email }),
-          }
-        );
+      if (!response.ok) {
+        throw new Error(data.message || "Something went wrong");
+      }
 
-        const data = await response.json();
+      setSuccess(data.message || t.resetCodeSent);
 
-        if (!response.ok) {
-          throw new Error(data.message || "Something went wrong");
-        }
-      */
-
-      // Temporary simulation
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      setSuccess(t.resetCodeSent);
-
-      /*
-        After your backend is ready, navigate to:
-
-        navigate("/trainer/verify-otp", {
-          state: { email },
-        });
-      */
+      // Go to OTP verification page
+      navigate("/trainer/verify-otp", {
+        state: { email },
+      });
     } catch (error) {
       console.error("Forgot password error:", error);
-
       setError(error.message || t.forgotPasswordError);
     } finally {
       setLoading(false);
