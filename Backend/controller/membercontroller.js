@@ -293,7 +293,9 @@ export const getMember = async (req, res) => {
   }
 };
 
+// =====================================================
 // UPDATE MEMBER
+// =====================================================
 
 export const updateMember = async (req, res) => {
   const { id } = req.params;
@@ -310,10 +312,13 @@ export const updateMember = async (req, res) => {
     weight,
     diet,
     exerciseType,
-    image,
   } = req.body;
 
   try {
+    // =====================================================
+    // 1. VALIDATE MEMBER ID
+    // =====================================================
+
     const memberId = Number(id);
 
     if (!Number.isInteger(memberId)) {
@@ -323,17 +328,48 @@ export const updateMember = async (req, res) => {
       });
     }
 
-    // Required fields
-    if (!name?.trim() || !phone?.trim() || !monthlyFee) {
+    // =====================================================
+    // 2. REQUIRED FIELDS
+    // =====================================================
+
+    if (!name?.trim()) {
       return res.status(400).json({
         success: false,
-        message: "name, phone, and monthlyFee are required",
+        message: "Name is required",
       });
     }
 
-    // Validate optional numeric fields
+    if (!phone?.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "Phone is required",
+      });
+    }
+
+    if (monthlyFee === undefined || monthlyFee === null || monthlyFee === "") {
+      return res.status(400).json({
+        success: false,
+        message: "Monthly fee is required",
+      });
+    }
+
+    const parsedMonthlyFee = Number(monthlyFee);
+
+    if (!Number.isFinite(parsedMonthlyFee) || parsedMonthlyFee < 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Monthly fee must be a valid number",
+      });
+    }
+
+    // =====================================================
+    // 3. VALIDATE AGE
+    // =====================================================
+
+    let parsedAge = null;
+
     if (age !== undefined && age !== null && age !== "") {
-      const parsedAge = Number(age);
+      parsedAge = Number(age);
 
       if (!Number.isInteger(parsedAge) || parsedAge < 1 || parsedAge > 120) {
         return res.status(400).json({
@@ -343,8 +379,14 @@ export const updateMember = async (req, res) => {
       }
     }
 
+    // =====================================================
+    // 4. VALIDATE HEIGHT
+    // =====================================================
+
+    let parsedHeight = null;
+
     if (height !== undefined && height !== null && height !== "") {
-      const parsedHeight = Number(height);
+      parsedHeight = Number(height);
 
       if (!Number.isFinite(parsedHeight) || parsedHeight <= 0) {
         return res.status(400).json({
@@ -354,8 +396,14 @@ export const updateMember = async (req, res) => {
       }
     }
 
+    // =====================================================
+    // 5. VALIDATE WEIGHT
+    // =====================================================
+
+    let parsedWeight = null;
+
     if (weight !== undefined && weight !== null && weight !== "") {
-      const parsedWeight = Number(weight);
+      parsedWeight = Number(weight);
 
       if (!Number.isFinite(parsedWeight) || parsedWeight <= 0) {
         return res.status(400).json({
@@ -365,7 +413,10 @@ export const updateMember = async (req, res) => {
       }
     }
 
-    // Make sure the member belongs to the logged-in trainer
+    // =====================================================
+    // 6. FIND MEMBER
+    // =====================================================
+
     const existingMember = await prisma.member.findFirst({
       where: {
         id: memberId,
@@ -380,6 +431,101 @@ export const updateMember = async (req, res) => {
       });
     }
 
+    // =====================================================
+    // 7. PREPARE IMAGE
+    // =====================================================
+
+    let imageUrl = existingMember.image;
+
+    // =====================================================
+    // 8. UPLOAD NEW IMAGE IF PROVIDED
+    // =====================================================
+
+    if (req.file) {
+      console.log("📸 New member image detected");
+
+      console.log("📁 File:", req.file.originalname);
+      console.log("📦 Size:", req.file.size);
+      console.log("📝 MIME:", req.file.mimetype);
+
+      const extension =
+        req.file.originalname.split(".").pop()?.toLowerCase() || "jpg";
+
+      const fileName = `member-${memberId}-${randomUUID()}.${extension}`;
+
+      console.log("📤 Uploading:", fileName);
+
+      const { error: uploadError } = await supabase.storage
+        .from("gym-profile-image")
+        .upload(fileName, req.file.buffer, {
+          contentType: req.file.mimetype,
+          upsert: false,
+        });
+
+      if (uploadError) {
+        console.error("❌ SUPABASE UPLOAD ERROR:", uploadError);
+
+        return res.status(500).json({
+          success: false,
+          message: "Supabase image upload failed",
+          error: uploadError.message,
+        });
+      }
+
+      console.log("✅ New image uploaded");
+
+      const { data: publicUrlData } = supabase.storage
+        .from("gym-profile-image")
+        .getPublicUrl(fileName);
+
+      imageUrl = publicUrlData.publicUrl;
+
+      console.log("🌐 New image URL:", imageUrl);
+
+      // =====================================================
+      // DELETE OLD IMAGE
+      // =====================================================
+
+      if (existingMember.image) {
+        try {
+          const bucketName = "gym-profile-image";
+
+          const oldImageUrl = existingMember.image;
+
+          const marker = `${bucketName}/`;
+
+          const markerIndex = oldImageUrl.indexOf(marker);
+
+          if (markerIndex !== -1) {
+            const oldFilePath = oldImageUrl.substring(
+              markerIndex + marker.length,
+            );
+
+            console.log("🗑️ Old image path:", oldFilePath);
+
+            const { error: deleteError } = await supabase.storage
+              .from(bucketName)
+              .remove([oldFilePath]);
+
+            if (deleteError) {
+              console.error(
+                "⚠️ Could not delete old image:",
+                deleteError.message,
+              );
+            } else {
+              console.log("✅ Old image deleted");
+            }
+          }
+        } catch (deleteError) {
+          console.error("⚠️ Old image deletion error:", deleteError);
+        }
+      }
+    }
+
+    // =====================================================
+    // 9. UPDATE MEMBER
+    // =====================================================
+
     const updatedMember = await prisma.member.update({
       where: {
         id: memberId,
@@ -387,35 +533,34 @@ export const updateMember = async (req, res) => {
 
       data: {
         name: name.trim(),
+
         phone: phone.trim(),
+
         email: email?.trim() || null,
-        monthlyFee: Number(monthlyFee),
+
+        monthlyFee: parsedMonthlyFee,
 
         startDate: startDate ? new Date(startDate) : existingMember.startDate,
 
         internalNotes: internalNotes?.trim() || null,
 
-        // Member information
-        age:
-          age !== undefined && age !== null && age !== "" ? Number(age) : null,
+        age: parsedAge,
 
-        height:
-          height !== undefined && height !== null && height !== ""
-            ? Number(height)
-            : null,
+        height: parsedHeight,
 
-        weight:
-          weight !== undefined && weight !== null && weight !== ""
-            ? Number(weight)
-            : null,
+        weight: parsedWeight,
 
         diet: diet?.trim() || null,
 
         exerciseType: exerciseType?.trim() || null,
 
-        image: image?.trim() || null,
+        image: imageUrl,
       },
     });
+
+    // =====================================================
+    // 10. RESPONSE
+    // =====================================================
 
     return res.status(200).json({
       success: true,
@@ -423,8 +568,9 @@ export const updateMember = async (req, res) => {
       member: updatedMember,
     });
   } catch (error) {
-    console.error("Update member error:", error);
+    console.error("❌ Update member error:", error);
 
+    // Prisma unique constraint
     if (error.code === "P2002") {
       return res.status(409).json({
         success: false,

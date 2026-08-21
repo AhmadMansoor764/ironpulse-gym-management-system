@@ -22,7 +22,7 @@ router.post(
 );
 
 router.get("/:id", authMiddleware, getMember);
-router.put("/:id", authMiddleware, updateMember);
+router.put("/:id", authMiddleware, upload.single("image"), updateMember);
 router.delete("/:id", authMiddleware, deleteMember);
 
 export default router;
