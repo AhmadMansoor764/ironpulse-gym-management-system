@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { formatJalaliDate } from "../../utils/jalaliDate";
 
 import {
   FiPhone,
@@ -130,19 +131,22 @@ function MemberCard({ member, index, onDelete }) {
   /* =======================================================
      LAST PAYMENT INFORMATION
   ======================================================= */
-
-  const paymentLabel = member.lastPaymentLabel || memberCardT.dueDate;
+  const paymentLabel =
+    member.status === "paid" ? memberCardT.nextPayment : memberCardT.paymentDue;
 
   const paymentValue =
-    member.lastPaymentValue ||
-    member.lastPaymentDate ||
-    (member.status === "unpaid"
-      ? memberCardT.paymentDue
-      : memberCardT.noPaymentYet);
-
+    member.status === "paid"
+      ? member.nextPaymentDate
+        ? formatJalaliDate(member.nextPaymentDate)
+        : memberCardT.noPaymentYet
+      : memberCardT.paymentRequired;
   /* =======================================================
      UI
   ======================================================= */
+
+  const startDateValue = member.startDate
+    ? formatJalaliDate(member.startDate)
+    : "-";
 
   return (
     <motion.article
@@ -459,62 +463,63 @@ function MemberCard({ member, index, onDelete }) {
       </div>
 
       {/* =====================================================
-          BOTTOM INFORMATION
-      ===================================================== */}
-
+    BOTTOM PAYMENT INFORMATION
+===================================================== */}
       <div
         className="
-          absolute
-          bottom-[28px]
-          left-[29px]
-          right-[29px]
-          flex
-          items-end
-          justify-between
-        "
+    absolute
+    bottom-[28px]
+    left-[29px]
+    right-[29px]
+    flex
+    items-end
+    justify-between
+    gap-4
+  "
       >
-        <div>
+        {/* PAYMENT / NEXT PAYMENT */}
+        <div className="min-w-0">
           <p
             className="
-              mb-1
-              text-[14px]
-              font-medium
-              tracking-[1px]
-              text-[#5e6148]
-            "
+        mb-1
+        text-[14px]
+        font-medium
+        tracking-[1px]
+        text-[#5e6148]
+      "
           >
             {paymentLabel}
           </p>
 
           <p
             className={`
-              text-[20px]
-              font-medium
-              ${status.valueColor}
-            `}
+        truncate
+        text-[18px]
+        font-medium
+        ${member.status === "paid" ? "text-[#d0d0c7]" : "text-[#ff9d92]"}
+      `}
           >
             {paymentValue}
           </p>
         </div>
 
         {/* STATUS */}
-
         <div
           className={`
-            flex
-            items-center
-            gap-1.5
-            rounded-[7px]
-            border
-            px-3
-            py-1.5
-            text-[14px]
-            font-bold
-            ${status.className}
-          `}
+      flex
+      shrink-0
+      items-center
+      gap-1.5
+      rounded-[7px]
+      border
+      px-3
+      py-1.5
+      text-[14px]
+      font-bold
+      ${status.className}
+    `}
         >
           <StatusIcon size={16} />
-
           {status.text}
         </div>
       </div>

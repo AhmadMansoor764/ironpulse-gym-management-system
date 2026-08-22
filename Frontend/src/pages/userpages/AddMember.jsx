@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import JalaliDatePicker from "./JalaliDatePicker";
 
 import {
   FiArrowLeft,
@@ -24,7 +25,7 @@ function AddMember() {
     phone: "",
     email: "",
     fee: "400",
-    startDate: new Date().toISOString().split("T")[0],
+    startDate: new Date(),
 
     age: "",
     height: "",
@@ -90,7 +91,7 @@ function AddMember() {
       // Membership
       formDataToSend.append("monthlyFee", formData.fee);
 
-      formDataToSend.append("startDate", formData.startDate);
+      formDataToSend.append("startDate", formData.startDate.toISOString());
 
       // Fitness information
       formDataToSend.append("age", formData.age || "");
@@ -441,15 +442,16 @@ function AddMember() {
                   {t.membershipDetailsDescription}
                 </p>
               </div>
-
               <FormField label={t.startDate} icon={null} delay={0.25}>
-                <input
-                  type="date"
-                  name="startDate"
+                <JalaliDatePicker
                   value={formData.startDate}
-                  onChange={handleChange}
+                  onChange={(date) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      startDate: date,
+                    }))
+                  }
                   required
-                  className="input-field px-5"
                 />
               </FormField>
             </div>

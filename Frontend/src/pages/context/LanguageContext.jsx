@@ -802,6 +802,11 @@ const translations = {
 
       recordNewPayment: "Record New Payment",
     },
+
+    nextPayment: "Next Payment",
+    paymentDue: "Payment Due",
+    paymentRequired: "Payment required",
+    noPaymentYet: "No payment recorded yet",
   },
 
   // =========================================================
@@ -1599,6 +1604,11 @@ const translations = {
 
       recordNewPayment: "ثبت پرداخت جدید",
     },
+
+    nextPayment: "پرداخت بعدی",
+    paymentDue: "پرداخت سررسید",
+    paymentRequired: "پرداخت لازم است",
+    noPaymentYet: "هنوز پرداختی ثبت نشده است",
   },
 
   // =========================================================
@@ -2396,6 +2406,11 @@ const translations = {
 
     recordNewPayment: "نوې تادیه ثبت کړئ",
   },
+
+  nextPayment: "راتلونکې تادیه",
+  paymentDue: "د تادیې نېټه",
+  paymentRequired: "تادیه اړینه ده",
+  noPaymentYet: "تر اوسه هېڅ تادیه نه ده ثبت شوې",
 };
 
 // =========================================================

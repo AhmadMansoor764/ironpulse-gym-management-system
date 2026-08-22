@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { toGregorian, toJalaali } from "jalaali-js";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -27,37 +28,64 @@ function RecordPayment() {
   const memberId = searchParams.get("member");
 
   // =========================================================
-  // MONTHS
+  // JALALI MONTHS
   // =========================================================
 
   const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
+    "Hamal",
+    "Sawr",
+    "Jawza",
+    "Saratan",
+    "Asad",
+    "Sunbula",
+    "Mizan",
+    "Aqrab",
+    "Qaws",
+    "Jadi",
+    "Dalwa",
+    "Hoot",
   ];
+
+  // =========================================================
+  // TODAY
+  // =========================================================
+
+  const today = new Date();
+
+  const todayJalali = toJalaali(
+    today.getFullYear(),
+    today.getMonth() + 1,
+    today.getDate(),
+  );
+
+  const currentJalaliMonth = todayJalali.jm;
+  const currentJalaliYear = todayJalali.jy;
+  const currentJalaliDay = todayJalali.jd;
 
   // =========================================================
   // YEARS
   // =========================================================
 
-  const years = [2026, 2027, 2028, 2029, 2030, 2031, 2032];
+  const years = Array.from(
+    { length: 8 },
+    (_, index) => currentJalaliYear - 2 + index,
+  );
 
   // =========================================================
   // BILLING PERIOD
   // =========================================================
 
-  const [selectedMonth, setSelectedMonth] = useState("November");
-  const [selectedYear, setSelectedYear] = useState(2026);
   const [periodOpen, setPeriodOpen] = useState(false);
+
+  const [selectedMonth, setSelectedMonth] = useState(currentJalaliMonth);
+
+  const [selectedYear, setSelectedYear] = useState(currentJalaliYear);
+
+  const [selectedDay, setSelectedDay] = useState(currentJalaliDay);
+
+  // =========================================================
+  // MEMBER STATE
+  // =========================================================
 
   const [member, setMember] = useState(null);
 
@@ -70,8 +98,58 @@ function RecordPayment() {
   const [paymentMethod, setPaymentMethod] = useState("cash");
 
   const [sendReceipt, setSendReceipt] = useState(true);
+
   const [error, setError] = useState("");
+
   const [loading, setLoading] = useState(false);
+
+  // =========================================================
+  // JALALI MONTH DAYS
+  // =========================================================
+  //
+  // First 6 months: 31 days
+  // Months 7-11: 30 days
+  // Hoot: 29 days normally, 30 in leap year
+  //
+  // We use 29 for Hoot here to keep the selected date valid.
+  // =========================================================
+
+  const getDaysInJalaliMonth = (year, month) => {
+    if (month >= 1 && month <= 6) {
+      return 31;
+    }
+
+    if (month >= 7 && month <= 11) {
+      return 30;
+    }
+
+    return 29;
+  };
+
+  // =========================================================
+  // CURRENT NUMBER OF DAYS IN SELECTED MONTH
+  // =========================================================
+
+  const daysInSelectedMonth = getDaysInJalaliMonth(selectedYear, selectedMonth);
+
+  // =========================================================
+  // MAKE SURE SELECTED DAY IS VALID
+  // =========================================================
+
+  useEffect(() => {
+    if (selectedDay > daysInSelectedMonth) {
+      setSelectedDay(daysInSelectedMonth);
+    }
+  }, [selectedYear, selectedMonth, selectedDay, daysInSelectedMonth]);
+
+  // =========================================================
+  // CURRENT BILLING PERIOD
+  // =========================================================
+
+  const billingPeriod = `${selectedYear}/${String(selectedMonth).padStart(
+    2,
+    "0",
+  )}/${String(selectedDay).padStart(2, "0")}`;
 
   // =========================================================
   // PAYMENT METHODS
@@ -82,7 +160,6 @@ function RecordPayment() {
       id: "cash",
       label: recordPaymentT.cash,
       icon: FaMoneyBillWave,
-      selected: true,
     },
     {
       id: "card",
@@ -97,19 +174,35 @@ function RecordPayment() {
   ];
 
   // =========================================================
-  // CURRENT BILLING PERIOD
-  // =========================================================
-
-  const billingPeriod = `${
-    recordPaymentT.months[selectedMonth]
-  } ${selectedYear}`;
-
-  // =========================================================
   // CANCEL
   // =========================================================
 
   const handleCancel = () => {
     navigate(-1);
+  };
+
+  // =========================================================
+  // SELECT MONTH
+  // =========================================================
+
+  const handleMonthSelect = (month) => {
+    setSelectedMonth(month);
+  };
+
+  // =========================================================
+  // SELECT YEAR
+  // =========================================================
+
+  const handleYearSelect = (year) => {
+    setSelectedYear(year);
+  };
+
+  // =========================================================
+  // SELECT DAY
+  // =========================================================
+
+  const handleDaySelect = (day) => {
+    setSelectedDay(day);
   };
 
   // =========================================================
@@ -135,21 +228,40 @@ function RecordPayment() {
     setLoading(true);
 
     try {
-      const paymentMonth = new Date(
-        Date.UTC(selectedYear, months.indexOf(selectedMonth), 1),
+      // =====================================================
+      // CONVERT JALALI DATE TO GREGORIAN DATE
+      // =====================================================
+
+      const gregorianDate = toGregorian(
+        selectedYear,
+        selectedMonth,
+        selectedDay,
       );
+
+      const paymentMonth = new Date(
+        Date.UTC(gregorianDate.gy, gregorianDate.gm - 1, gregorianDate.gd),
+      );
+
+      // =====================================================
+      // SEND PAYMENT TO BACKEND
+      // =====================================================
 
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/api/payment/add`,
         {
           method: "POST",
+
           credentials: "include",
+
           headers: {
             "Content-Type": "application/json",
           },
+
           body: JSON.stringify({
             memberId: Number(memberId),
+
             amount: Number(amount),
+
             paymentMonth,
           }),
         },
@@ -161,6 +273,10 @@ function RecordPayment() {
         throw new Error(data.message || recordPaymentT.unableToAddPayment);
       }
 
+      // =====================================================
+      // PAYMENT SUCCESS
+      // =====================================================
+
       navigate(-1);
     } catch (error) {
       console.error("Payment error:", error);
@@ -169,22 +285,6 @@ function RecordPayment() {
     } finally {
       setLoading(false);
     }
-  };
-
-  // =========================================================
-  // SELECT MONTH
-  // =========================================================
-
-  const handleMonthSelect = (month) => {
-    setSelectedMonth(month);
-  };
-
-  // =========================================================
-  // SELECT YEAR
-  // =========================================================
-
-  const handleYearSelect = (year) => {
-    setSelectedYear(year);
   };
 
   // =========================================================
@@ -208,6 +308,7 @@ function RecordPayment() {
         }
 
         setMember(data.member);
+
         setAmount(data.member.monthlyFee.toString());
       } catch (error) {
         console.error(error);
@@ -218,6 +319,10 @@ function RecordPayment() {
       getMember();
     }
   }, [memberId]);
+
+  // =========================================================
+  // RENDER
+  // =========================================================
 
   return (
     <div className="min-h-screen w-full bg-[#111111] text-white">
@@ -241,10 +346,8 @@ function RecordPayment() {
             grid-cols-[1fr_auto_1fr]
             items-center
             px-4
-
             sm:h-[74px]
             sm:px-6
-
             lg:h-[78px]
             lg:px-8
           "
@@ -269,10 +372,8 @@ function RecordPayment() {
                 className="
                   h-[20px]
                   w-[20px]
-
                   sm:h-[22px]
                   sm:w-[22px]
-
                   lg:h-[23px]
                   lg:w-[23px]
                 "
@@ -284,9 +385,7 @@ function RecordPayment() {
                   text-[13px]
                   font-medium
                   tracking-wide
-
                   sm:text-[14px]
-
                   lg:text-[14px]
                 "
               >
@@ -300,7 +399,10 @@ function RecordPayment() {
           <motion.h1
             initial={{ opacity: 0, y: -5 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.05 }}
+            transition={{
+              duration: 0.4,
+              delay: 0.05,
+            }}
             className="
               whitespace-nowrap
               text-[24px]
@@ -308,9 +410,7 @@ function RecordPayment() {
               leading-none
               tracking-[-1px]
               text-[#f5f5f5]
-
               sm:text-[27px]
-
               lg:text-[29px]
             "
           >
@@ -331,11 +431,9 @@ function RecordPayment() {
             px-3
             pb-10
             pt-5
-
             sm:px-5
             sm:pb-12
             sm:pt-7
-
             lg:px-8
             lg:pb-14
             lg:pt-8
@@ -368,12 +466,10 @@ function RecordPayment() {
               pb-6
               pt-6
               shadow-[0_18px_45px_rgba(0,0,0,0.28)]
-
               sm:rounded-[18px]
               sm:px-7
               sm:pb-8
               sm:pt-7
-
               lg:rounded-[20px]
               lg:px-9
               lg:pb-9
@@ -405,9 +501,7 @@ function RecordPayment() {
                   leading-tight
                   tracking-[-0.7px]
                   text-[#f4f4f4]
-
                   sm:text-[30px]
-
                   lg:text-[32px]
                 "
               >
@@ -420,9 +514,7 @@ function RecordPayment() {
                   text-[14px]
                   leading-6
                   text-[#aeb09f]
-
                   sm:text-[15px]
-
                   lg:text-[15px]
                 "
               >
@@ -450,7 +542,6 @@ function RecordPayment() {
                   font-bold
                   tracking-[0.4px]
                   text-[#d7d8cf]
-
                   sm:text-[14px]
                 "
               >
@@ -458,6 +549,8 @@ function RecordPayment() {
               </label>
 
               <div className="relative mt-2.5">
+                {/* CURRENT DATE DISPLAY */}
+
                 <motion.button
                   type="button"
                   whileTap={{
@@ -476,10 +569,8 @@ function RecordPayment() {
                     text-left
                     transition-colors
                     hover:bg-[#303030]
-
                     sm:h-[56px]
                     sm:px-5
-
                     lg:h-[58px]
                   "
                 >
@@ -488,7 +579,6 @@ function RecordPayment() {
                       text-[16px]
                       font-medium
                       text-[#dededb]
-
                       sm:text-[17px]
                     "
                   >
@@ -504,7 +594,9 @@ function RecordPayment() {
                   </motion.div>
                 </motion.button>
 
-                {/* PERIOD PICKER */}
+                {/* =================================================
+                    PERIOD PICKER
+                ================================================== */}
 
                 <AnimatePresence>
                   {periodOpen && (
@@ -541,7 +633,9 @@ function RecordPayment() {
                         shadow-[0_18px_35px_rgba(0,0,0,0.45)]
                       "
                     >
-                      {/* YEAR */}
+                      {/* =================================================
+                          YEAR
+                      ================================================== */}
 
                       <div className="mb-4">
                         <p
@@ -562,7 +656,6 @@ function RecordPayment() {
                             grid
                             grid-cols-3
                             gap-1.5
-
                             sm:grid-cols-4
                           "
                         >
@@ -591,9 +684,11 @@ function RecordPayment() {
                         </div>
                       </div>
 
-                      {/* MONTH */}
+                      {/* =================================================
+                          MONTH
+                      ================================================== */}
 
-                      <div>
+                      <div className="mb-4">
                         <p
                           className="
                             mb-2
@@ -615,39 +710,97 @@ function RecordPayment() {
                             gap-1.5
                             overflow-y-auto
                             pr-1
-
                             sm:grid-cols-4
                           "
                         >
-                          {months.map((month) => (
+                          {months.map((month, index) => (
                             <button
                               key={month}
                               type="button"
-                              onClick={() => handleMonthSelect(month)}
+                              onClick={() => handleMonthSelect(index + 1)}
                               className={`
-                                rounded-[8px]
-                                px-1
-                                py-2
-                                text-[11px]
-                                font-medium
-                                transition-colors
+                                  rounded-[8px]
+                                  px-1
+                                  py-2
+                                  text-[11px]
+                                  font-medium
+                                  transition-colors
+                                  sm:text-[12px]
 
-                                sm:text-[12px]
-
-                                ${
-                                  selectedMonth === month
-                                    ? "bg-[#caff00] text-[#101010]"
-                                    : "bg-[#333333] text-[#d5d5cd] hover:bg-[#3a3a3a]"
-                                }
-                              `}
+                                  ${
+                                    selectedMonth === index + 1
+                                      ? "bg-[#caff00] text-[#101010]"
+                                      : "bg-[#333333] text-[#d5d5cd] hover:bg-[#3a3a3a]"
+                                  }
+                                `}
                             >
-                              {recordPaymentT.months[month]}
+                              {recordPaymentT.months[month] || month}
                             </button>
                           ))}
                         </div>
                       </div>
 
-                      {/* DONE */}
+                      {/* =================================================
+                          DAY
+                      ================================================== */}
+
+                      <div>
+                        <p
+                          className="
+                            mb-2
+                            px-1
+                            text-[10px]
+                            font-bold
+                            tracking-[1px]
+                            text-[#77796a]
+                          "
+                        >
+                          DAY
+                        </p>
+
+                        <div
+                          className="
+                            grid
+                            max-h-[150px]
+                            grid-cols-7
+                            gap-1.5
+                            overflow-y-auto
+                            pr-1
+                          "
+                        >
+                          {Array.from(
+                            {
+                              length: daysInSelectedMonth,
+                            },
+                            (_, index) => index + 1,
+                          ).map((day) => (
+                            <button
+                              key={day}
+                              type="button"
+                              onClick={() => handleDaySelect(day)}
+                              className={`
+                                rounded-[8px]
+                                py-2
+                                text-[11px]
+                                font-medium
+                                transition-colors
+
+                                ${
+                                  selectedDay === day
+                                    ? "bg-[#caff00] text-[#101010]"
+                                    : "bg-[#333333] text-[#d5d5cd] hover:bg-[#3a3a3a]"
+                                }
+                              `}
+                            >
+                              {day}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* =================================================
+                          DONE
+                      ================================================== */}
 
                       <button
                         type="button"
@@ -688,7 +841,6 @@ function RecordPayment() {
                   font-bold
                   tracking-[0.4px]
                   text-[#d7d8cf]
-
                   sm:text-[14px]
                 "
               >
@@ -706,9 +858,7 @@ function RecordPayment() {
                     font-bold
                     text-[#bfc0ad]
                   "
-                >
-                  $
-                </span>
+                ></span>
 
                 <input
                   type="number"
@@ -732,10 +882,8 @@ function RecordPayment() {
                     focus:bg-[#303030]
                     focus:ring-2
                     focus:ring-[#caff00]
-
                     sm:h-[56px]
                     sm:text-[19px]
-
                     lg:h-[58px]
                   "
                 />
@@ -747,7 +895,6 @@ function RecordPayment() {
                   text-[12px]
                   leading-5
                   text-[#929487]
-
                   sm:text-[13px]
                 "
               >
@@ -767,7 +914,6 @@ function RecordPayment() {
                   font-bold
                   tracking-[0.4px]
                   text-[#d7d8cf]
-
                   sm:text-[14px]
                 "
               >
@@ -780,12 +926,12 @@ function RecordPayment() {
                   grid
                   grid-cols-3
                   gap-2
-
                   sm:gap-3
                 "
               >
                 {paymentMethods.map((method) => {
                   const Icon = method.icon;
+
                   const selected = paymentMethod === method.id;
 
                   return (
@@ -797,45 +943,42 @@ function RecordPayment() {
                         scale: 0.97,
                       }}
                       className={`
-                        flex
-                        h-[68px]
-                        flex-col
-                        items-center
-                        justify-center
-                        rounded-[10px]
-                        transition-all
+                          flex
+                          h-[68px]
+                          flex-col
+                          items-center
+                          justify-center
+                          rounded-[10px]
+                          transition-all
+                          sm:h-[74px]
+                          sm:rounded-[11px]
 
-                        sm:h-[74px]
-                        sm:rounded-[11px]
-
-                        ${
-                          selected
-                            ? "border-2 border-[#caff00] bg-[#242719]"
-                            : "border-2 border-transparent bg-[#2a2a2a] hover:bg-[#303030]"
-                        }
-                      `}
+                          ${
+                            selected
+                              ? "border-2 border-[#caff00] bg-[#242719]"
+                              : "border-2 border-transparent bg-[#2a2a2a] hover:bg-[#303030]"
+                          }
+                        `}
                     >
                       <Icon
                         className="
-                          h-[20px]
-                          w-[20px]
-                          text-[#d0d1bc]
-
-                          sm:h-[22px]
-                          sm:w-[22px]
-                        "
+                            h-[20px]
+                            w-[20px]
+                            text-[#d0d1bc]
+                            sm:h-[22px]
+                            sm:w-[22px]
+                          "
                       />
 
                       <span
                         className="
-                          mt-1.5
-                          text-[10px]
-                          font-semibold
-                          tracking-[0.3px]
-                          text-[#d0d0c7]
-
-                          sm:text-[11px]
-                        "
+                            mt-1.5
+                            text-[10px]
+                            font-semibold
+                            tracking-[0.3px]
+                            text-[#d0d0c7]
+                            sm:text-[11px]
+                          "
                       >
                         {method.label}
                       </span>
@@ -879,7 +1022,6 @@ function RecordPayment() {
                     font-medium
                     leading-5
                     text-[#ff9b91]
-
                     sm:text-[14px]
                   "
                 >
@@ -898,10 +1040,8 @@ function RecordPayment() {
                 grid
                 grid-cols-2
                 gap-2.5
-
                 sm:mt-8
                 sm:gap-3
-
                 lg:mt-9
               "
             >
@@ -925,7 +1065,6 @@ function RecordPayment() {
                   text-[#f0f0ed]
                   transition-colors
                   hover:bg-[#242424]
-
                   sm:h-[58px]
                   sm:text-[14px]
                 "
@@ -962,7 +1101,6 @@ function RecordPayment() {
                   transition-opacity
                   disabled:cursor-not-allowed
                   disabled:opacity-70
-
                   sm:h-[58px]
                   sm:text-[14px]
                 "
@@ -992,7 +1130,6 @@ function RecordPayment() {
                       className="
                         h-[18px]
                         w-[18px]
-
                         sm:h-[19px]
                         sm:w-[19px]
                       "

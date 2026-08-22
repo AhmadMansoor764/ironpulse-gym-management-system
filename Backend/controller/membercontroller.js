@@ -229,14 +229,46 @@ export const getMembers = async (req, res) => {
         trainerId: req.user.id,
       },
 
+      include: {
+        payments: {
+          orderBy: {
+            paymentMonth: "desc",
+          },
+          take: 1,
+        },
+      },
+
       orderBy: {
         id: "desc",
       },
     });
 
+    const membersWithPaymentInfo = members.map((member) => {
+      const lastPayment = member.payments[0] || null;
+
+      if (!lastPayment) {
+        return {
+          ...member,
+          status: "unpaid",
+          lastPaymentDate: null,
+          nextPaymentDate: null,
+        };
+      }
+
+      const nextPaymentDate = new Date(lastPayment.paymentMonth);
+      nextPaymentDate.setMonth(nextPaymentDate.getMonth() + 1);
+
+      return {
+        ...member,
+        status: "paid",
+        lastPaymentDate: lastPayment.paymentMonth,
+        nextPaymentDate,
+      };
+    });
+
     return res.status(200).json({
       success: true,
-      members,
+      members: membersWithPaymentInfo,
     });
   } catch (error) {
     console.error("Get members error:", error);
