@@ -451,7 +451,7 @@ const MemberDetails = () => {
                     sm:text-[27px]
                   "
                 >
-                  ${Number(member.monthlyFee || 0).toFixed(2)}
+                  {Number(member.monthlyFee || 0).toFixed(2)}
                 </p>
               </div>
 

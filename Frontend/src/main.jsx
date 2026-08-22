@@ -4,7 +4,7 @@ import "./index.css";
 import App from "./App.jsx";
 import { BrowserRouter } from "react-router-dom";
 import { LanguageProvider } from "./pages/context/LanguageContext.jsx";
-
+import { GoogleOAuthProvider } from "@react-oauth/google";
 import { registerSW } from "virtual:pwa-register";
 
 registerSW({
@@ -13,10 +13,12 @@ registerSW({
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <BrowserRouter>
-      <LanguageProvider>
-        <App />
-      </LanguageProvider>
-    </BrowserRouter>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      <BrowserRouter>
+        <LanguageProvider>
+          <App />
+        </LanguageProvider>
+      </BrowserRouter>
+    </GoogleOAuthProvider>
   </StrictMode>,
 );

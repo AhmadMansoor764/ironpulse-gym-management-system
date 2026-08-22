@@ -8,6 +8,7 @@ import {
 } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import { useLanguage } from "../context/LanguageContext";
+import { GoogleLogin } from "@react-oauth/google";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -63,6 +64,50 @@ const Login = () => {
     setErrors(newErrors);
 
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      setSubmitting(true);
+
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/auth/google`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            credential: credentialResponse.credential,
+          }),
+        },
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Google login failed");
+      }
+
+      console.log("Google login successful");
+
+      navigate("/layout/dashboard");
+    } catch (error) {
+      console.error("Google login error:", error);
+
+      setErrors({
+        submit: error.message || "Unable to login with Google",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleGoogleError = () => {
+    setErrors({
+      submit: "Google login failed. Please try again.",
+    });
   };
 
   // ==========================================
@@ -221,6 +266,28 @@ const Login = () => {
           >
             {t.trainerAccessPortal}
           </p>
+        </div>
+
+        <div className="mt-5 sm:mt-6">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={handleGoogleError}
+            useOneTap={false}
+            theme="filled_black"
+            size="large"
+            width="100%"
+            text="continue_with"
+            shape="rectangular"
+          />
+        </div>
+
+        {/* OR divider */}
+        <div className="my-5 flex items-center gap-4">
+          <div className="h-px flex-1 bg-[#353535]" />
+
+          <span className="text-xs font-medium text-[#858579]">OR</span>
+
+          <div className="h-px flex-1 bg-[#353535]" />
         </div>
 
         {/* ==========================================
