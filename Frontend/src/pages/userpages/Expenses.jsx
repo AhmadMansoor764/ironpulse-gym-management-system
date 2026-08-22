@@ -154,11 +154,7 @@ function Expenses() {
   ===================================================== */
 
   const formatMoney = (amount) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      minimumFractionDigits: 2,
-    }).format(amount || 0);
+    return Math.trunc(Number(amount) || 0).toLocaleString("en-US");
   };
 
   /* =====================================================

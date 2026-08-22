@@ -16,6 +16,8 @@ import Expenses from "./pages/userpages/Expenses";
 import AddMember from "./pages/userpages/AddMember";
 import TrainerProfile from "./pages/userpages/TrainerProfile";
 import EditMember from "./pages/userpages/EditMember";
+import EmailVerification from "./pages/authpages/EmailVerification";
+import ResetPassword from "./pages/authpages/ResetPassword";
 const App = () => {
   return (
     <Routes>
@@ -23,6 +25,8 @@ const App = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/verify-email" element={<EmailVerification />} />
+      <Route path="/trainer/reset-password" element={<ResetPassword />} />
       <Route path="/contact" element={<Contact />} />
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/terms" element={<Terms />} />

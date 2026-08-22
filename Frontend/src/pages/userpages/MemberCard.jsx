@@ -215,38 +215,51 @@ function MemberCard({ member, index, onDelete }) {
       <div className="relative flex items-start justify-between">
         <div className="flex min-w-0 items-center gap-5">
           {/* AVATAR */}
-
+          {/* AVATAR */}
           <div
             className="
-              flex
-              h-[70px]
-              w-[70px]
-              shrink-0
-              items-center
-              justify-center
-              rounded-full
-              bg-[#292929]
-              text-[28px]
-              font-medium
-              text-[#c7c7ad]
-              transition
-              duration-300
-              group-hover:bg-[#343434]
-              group-hover:text-[#d7ff00]
-            "
+    flex
+    h-[70px]
+    w-[70px]
+    shrink-0
+    items-center
+    justify-center
+    overflow-hidden
+    rounded-full
+    bg-[#292929]
+    text-[28px]
+    font-medium
+    text-[#c7c7ad]
+    transition
+    duration-300
+    group-hover:bg-[#343434]
+    group-hover:text-[#d7ff00]
+  "
             onClick={(e) => {
               e.stopPropagation();
               openDetails();
             }}
           >
-            {member.name
-              ?.trim()
-              .split(/\s+/)
-              .filter(Boolean)
-              .slice(0, 2)
-              .map((word) => word[0])
-              .join("")
-              .toUpperCase() || "?"}
+            {member.image ? (
+              <img
+                src={member.image}
+                alt={member.name || "Member"}
+                className="
+        h-full
+        w-full
+        object-cover
+      "
+              />
+            ) : (
+              member.name
+                ?.trim()
+                .split(/\s+/)
+                .filter(Boolean)
+                .slice(0, 2)
+                .map((word) => word[0])
+                .join("")
+                .toUpperCase() || "?"
+            )}
           </div>
 
           {/* NAME + CONTACT */}

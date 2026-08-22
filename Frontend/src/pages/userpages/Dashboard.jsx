@@ -381,11 +381,16 @@ const Dashboard = () => {
           </div>
 
           <p className="mt-5 text-[40px] font-black leading-none">
-            {formatMoney(stats.monthlyRevenue)}
+            {Math.round(Number(stats.monthlyRevenue) || 0).toLocaleString(
+              "en-US",
+            )}
           </p>
 
           <p className="mt-4 text-[14px] text-[#d4d6b7]">
-            {dashboardT.expenses}: {formatMoney(stats.monthlyExpenses)}
+            {dashboardT.expenses}:{" "}
+            {Math.round(Number(stats.monthlyExpenses) || 0).toLocaleString(
+              "en-US",
+            )}
           </p>
         </div>
       </section>

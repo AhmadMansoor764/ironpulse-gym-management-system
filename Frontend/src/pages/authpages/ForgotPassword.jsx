@@ -64,7 +64,7 @@ const ForgotPassword = () => {
       setSuccess(data.message || t.resetCodeSent);
 
       // Go to OTP verification page
-      navigate("/trainer/verify-otp", {
+      navigate("/verify-email", {
         state: { email },
       });
     } catch (error) {

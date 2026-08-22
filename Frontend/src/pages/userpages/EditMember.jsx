@@ -18,10 +18,6 @@ function EditMember() {
   const navigate = useNavigate();
   const { id } = useParams();
 
-  // =====================================================
-  // LANGUAGE
-  // =====================================================
-
   const { t } = useLanguage();
   const editT = t.editMember;
 
@@ -32,7 +28,14 @@ function EditMember() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  const [image, setImage] = useState(null);
+  // Existing image from Supabase
+  const [currentImage, setCurrentImage] = useState("");
+
+  // New image selected from computer
+  const [imageFile, setImageFile] = useState(null);
+
+  // Preview of new image
+  const [imagePreview, setImagePreview] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -47,7 +50,7 @@ function EditMember() {
   // =====================================================
 
   useEffect(() => {
-    const getUser = async () => {
+    const getMember = async () => {
       try {
         setLoading(true);
 
@@ -65,26 +68,44 @@ function EditMember() {
           throw new Error(data.message || editT.getMemberError);
         }
 
+        const member = data.member;
+
         setFormData({
-          name: data.member.name || "",
-          phone: data.member.phone || "",
-          email: data.member.email || "",
-          monthlyFee: data.member.monthlyFee || "",
-          startDate: data.member.startDate
-            ? new Date(data.member.startDate).toISOString().split("T")[0]
+          name: member.name || "",
+          phone: member.phone || "",
+          email: member.email || "",
+          monthlyFee: member.monthlyFee ?? "",
+          startDate: member.startDate
+            ? new Date(member.startDate).toISOString().split("T")[0]
             : "",
         });
+
+        // Existing Supabase image
+        setCurrentImage(member.image || "");
       } catch (error) {
         console.error("Get member error:", error);
+        alert(error.message);
       } finally {
         setLoading(false);
       }
     };
 
     if (id) {
-      getUser();
+      getMember();
     }
   }, [id, editT.getMemberError]);
+
+  // =====================================================
+  // CLEAN IMAGE PREVIEW URL
+  // =====================================================
+
+  useEffect(() => {
+    return () => {
+      if (imagePreview) {
+        URL.revokeObjectURL(imagePreview);
+      }
+    };
+  }, [imagePreview]);
 
   // =====================================================
   // INPUT CHANGE
@@ -108,9 +129,23 @@ function EditMember() {
 
     if (!file) return;
 
-    const imageUrl = URL.createObjectURL(file);
+    // Basic frontend validation
+    if (!file.type.startsWith("image/")) {
+      alert("Please select an image file.");
+      return;
+    }
 
-    setImage(imageUrl);
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image must be smaller than 5 MB.");
+      return;
+    }
+
+    // Save actual File
+    setImageFile(file);
+
+    // Create browser preview
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
   };
 
   // =====================================================
@@ -123,15 +158,35 @@ function EditMember() {
     try {
       setSaving(true);
 
+      /*
+       * IMPORTANT:
+       * We use FormData because we may be sending
+       * an image file to Multer.
+       */
+
+      const formDataToSend = new FormData();
+
+      formDataToSend.append("name", formData.name);
+      formDataToSend.append("phone", formData.phone);
+      formDataToSend.append("email", formData.email);
+      formDataToSend.append("monthlyFee", formData.monthlyFee);
+      formDataToSend.append("startDate", formData.startDate);
+
+      // New image
+      if (imageFile) {
+        formDataToSend.append("image", imageFile);
+      }
+
       const response = await fetch(
         `${import.meta.env.VITE_API_URL}/api/member/${id}`,
         {
           method: "PUT",
           credentials: "include",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
+
+          // DO NOT set Content-Type manually.
+          // Browser will automatically set:
+          // multipart/form-data; boundary=...
+          body: formDataToSend,
         },
       );
 
@@ -144,7 +199,6 @@ function EditMember() {
       navigate(`/layout/MembersDetails/${id}`);
     } catch (error) {
       console.error("Update member error:", error);
-
       alert(error.message);
     } finally {
       setSaving(false);
@@ -157,15 +211,7 @@ function EditMember() {
 
   if (loading) {
     return (
-      <div
-        className="
-          flex
-          min-h-screen
-          items-center
-          justify-center
-          bg-[#111111]
-        "
-      >
+      <div className="flex min-h-screen items-center justify-center bg-[#111111]">
         <div
           className="
             h-9
@@ -180,6 +226,12 @@ function EditMember() {
       </div>
     );
   }
+
+  // =====================================================
+  // WHICH IMAGE TO SHOW?
+  // =====================================================
+
+  const displayedImage = imagePreview || currentImage;
 
   // =====================================================
   // UI
@@ -212,6 +264,7 @@ function EditMember() {
       >
         <div
           className="
+            relative
             mx-auto
             flex
             h-[78px]
@@ -245,7 +298,9 @@ function EditMember() {
           >
             <FiArrowLeft size={24} />
 
-            <span className="hidden sm:block">{editT.back}</span>
+            <span className="hidden sm:block">
+              {editT.back}
+            </span>
           </motion.button>
 
           {/* TITLE */}
@@ -282,8 +337,6 @@ function EditMember() {
               {editT.subtitle}
             </p>
           </div>
-
-          {/* EMPTY RIGHT SIDE */}
 
           <div className="w-[40px]" />
         </div>
@@ -380,10 +433,10 @@ function EditMember() {
                   sm:w-[120px]
                 "
               >
-                {image ? (
+                {displayedImage ? (
                   <img
-                    src={image}
-                    alt={formData.name}
+                    src={displayedImage}
+                    alt={formData.name || "Member"}
                     className="
                       h-full
                       w-full
@@ -506,9 +559,7 @@ function EditMember() {
             lg:p-8
           "
         >
-          {/* =================================================
-              PERSONAL INFORMATION
-          ================================================= */}
+          {/* PERSONAL INFORMATION */}
 
           <SectionHeading
             title={editT.personalInformation}
@@ -555,9 +606,7 @@ function EditMember() {
             />
           </div>
 
-          {/* =================================================
-              MEMBERSHIP
-          ================================================= */}
+          {/* MEMBERSHIP */}
 
           <div className="my-9 h-px bg-[#30302f]" />
 
@@ -696,9 +745,7 @@ function EditMember() {
             </div>
           </div>
 
-          {/* =================================================
-              ACTIONS
-          ================================================= */}
+          {/* ACTIONS */}
 
           <div
             className="
@@ -790,9 +837,9 @@ function EditMember() {
   );
 }
 
-/* =========================================================
-   INPUT FIELD
-========================================================= */
+// =========================================================
+// INPUT FIELD
+// =========================================================
 
 function InputField({
   label,
@@ -804,6 +851,12 @@ function InputField({
   placeholder,
   required = false,
 }) {
+  /*
+   * Defensive check.
+   *
+   * If an icon is ever undefined, don't crash the whole page.
+   */
+
   return (
     <div>
       <label
@@ -819,17 +872,19 @@ function InputField({
       </label>
 
       <div className="relative">
-        <Icon
-          className="
-            pointer-events-none
-            absolute
-            left-5
-            top-1/2
-            -translate-y-1/2
-            text-[#9b9d90]
-          "
-          size={20}
-        />
+        {Icon ? (
+          <Icon
+            className="
+              pointer-events-none
+              absolute
+              left-5
+              top-1/2
+              -translate-y-1/2
+              text-[#9b9d90]
+            "
+            size={20}
+          />
+        ) : null}
 
         <input
           type={type}
@@ -862,9 +917,9 @@ function InputField({
   );
 }
 
-/* =========================================================
-   SECTION HEADING
-========================================================= */
+// =========================================================
+// SECTION HEADING
+// =========================================================
 
 function SectionHeading({ title, description }) {
   return (
@@ -895,9 +950,9 @@ function SectionHeading({ title, description }) {
   );
 }
 
-/* =========================================================
-   INITIALS
-========================================================= */
+// =========================================================
+// INITIALS
+// =========================================================
 
 function getInitials(name) {
   if (!name) return "M";

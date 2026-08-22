@@ -702,6 +702,106 @@ const translations = {
     },
 
     installApp: "Install App",
+
+    // Add Member / Fitness Information
+    fitnessInformation: "Fitness Information",
+    fitnessInformationDescription:
+      "Add the member's physical and fitness information.",
+
+    age: "Age",
+    agePlaceholder: "Enter age",
+
+    height: "Height (cm)",
+    heightPlaceholder: "e.g. 175",
+
+    weight: "Weight (kg)",
+    weightPlaceholder: "e.g. 70",
+
+    exerciseType: "Exercise Type",
+    selectExerciseType: "Select exercise type",
+
+    dietNutrition: "Diet / Nutrition",
+    dietPlaceholder: "e.g. High protein, low sugar, vegetarian...",
+
+    exerciseTypes: {
+      gym: "Gym",
+      fitness: "Fitness",
+      personalTraining: "Personal Training",
+      strengthTraining: "Strength Training",
+      cardio: "Cardio",
+      weightLoss: "Weight Loss",
+      bodybuilding: "Bodybuilding",
+      other: "Other",
+    },
+
+    // Member Details / Fitness
+    physicalFitnessInformation:
+      "Physical and fitness information for this member",
+
+    years: "years",
+    notAdded: "Not added",
+    heightLabel: "Height",
+    weightLabel: "Weight",
+    exercise: "Exercise",
+
+    noDietInformation: "No diet information added",
+
+    // Internal Notes
+    internalNotes: "Internal Notes",
+    internalNotesPlaceholder:
+      "Add private notes about this member, such as goals, preferences, special requirements, or other important information.",
+
+    // Member Details errors
+    unableToGetMember: "Unable to get member",
+    unableToGetPayments: "Unable to get payments",
+
+    memberDetailsPage: {
+      loading: "Loading member details...",
+      memberNotFound: "Member not found",
+      memberDetails: "Member Details",
+
+      call: "Call",
+      email: "Email",
+
+      currentStatus: "Current Status",
+      paid: "Paid",
+      unpaid: "Unpaid",
+
+      monthlyFee: "Monthly Fee",
+      memberSince: "Member Since",
+
+      fitnessInformation: "Fitness Information",
+      physicalFitnessInformation:
+        "Physical and fitness information for this member",
+
+      age: "Age",
+      height: "Height",
+      weight: "Weight",
+      exercise: "Exercise",
+
+      years: "years",
+      notAdded: "Not added",
+
+      dietNutrition: "Diet / Nutrition",
+      noDietInformation: "No diet information added",
+
+      internalNotes: "Internal Notes",
+      noInternalNotes: "No internal notes added",
+
+      paymentHistory: "Payment History",
+      previousMembershipPayments: "Previous membership payments",
+
+      month: "Month",
+      date: "Date",
+      amount: "Amount",
+      status: "Status",
+
+      loadingPayments: "Loading payment history...",
+      noPayments: "No payments recorded yet",
+      paidStatus: "Paid",
+
+      recordNewPayment: "Record New Payment",
+    },
   },
 
   // =========================================================
@@ -1405,6 +1505,100 @@ const translations = {
       somethingWentWrong: "هنگام پردازش درخواست شما مشکلی پیش آمد.",
     },
     installApp: "نصب برنامه",
+
+    fitnessInformation: "معلومات تناسب اندام",
+    fitnessInformationDescription:
+      "معلومات فیزیکی و تناسب اندام عضو را اضافه کنید.",
+
+    age: "سن",
+    agePlaceholder: "سن را وارد کنید",
+
+    height: "قد (cm)",
+    heightPlaceholder: "مثلاً 175",
+
+    weight: "وزن (kg)",
+    weightPlaceholder: "مثلاً 70",
+
+    exerciseType: "نوع تمرین",
+    selectExerciseType: "نوع تمرین را انتخاب کنید",
+
+    dietNutrition: "رژیم غذایی / تغذیه",
+    dietPlaceholder: "مثلاً پروتین بالا، قند کم، گیاه‌خواری...",
+
+    exerciseTypes: {
+      gym: "باشگاه",
+      fitness: "تناسب اندام",
+      personalTraining: "تمرین شخصی",
+      strengthTraining: "تمرین قدرتی",
+      cardio: "کاردیو",
+      weightLoss: "کاهش وزن",
+      bodybuilding: "بدن‌سازی",
+      other: "سایر",
+    },
+
+    physicalFitnessInformation: "معلومات فیزیکی و تناسب اندام این عضو",
+
+    years: "سال",
+    notAdded: "اضافه نشده",
+    heightLabel: "قد",
+    weightLabel: "وزن",
+    exercise: "تمرین",
+
+    noDietInformation: "معلومات رژیم غذایی اضافه نشده است",
+
+    internalNotes: "یادداشت‌های داخلی",
+    internalNotesPlaceholder:
+      "یادداشت‌های خصوصی درباره این عضو، مانند اهداف، ترجیحات، نیازهای خاص یا سایر معلومات مهم را اضافه کنید.",
+
+    unableToGetMember: "دریافت معلومات عضو امکان‌پذیر نبود",
+    unableToGetPayments: "دریافت پرداخت‌ها امکان‌پذیر نبود",
+
+    memberDetailsPage: {
+      loading: "در حال بارگذاری معلومات عضو...",
+      memberNotFound: "عضو پیدا نشد",
+      memberDetails: "معلومات عضو",
+
+      call: "تماس",
+      email: "ایمیل",
+
+      currentStatus: "وضعیت فعلی",
+      paid: "پرداخت شده",
+      unpaid: "پرداخت نشده",
+
+      monthlyFee: "هزینه ماهانه",
+      memberSince: "عضو از تاریخ",
+
+      fitnessInformation: "معلومات تناسب اندام",
+      physicalFitnessInformation: "معلومات فیزیکی و تناسب اندام این عضو",
+
+      age: "سن",
+      height: "قد",
+      weight: "وزن",
+      exercise: "تمرین",
+
+      years: "سال",
+      notAdded: "اضافه نشده",
+
+      dietNutrition: "رژیم غذایی / تغذیه",
+      noDietInformation: "معلومات رژیم غذایی اضافه نشده است",
+
+      internalNotes: "یادداشت‌های داخلی",
+      noInternalNotes: "یادداشت داخلی اضافه نشده است",
+
+      paymentHistory: "تاریخچه پرداخت‌ها",
+      previousMembershipPayments: "پرداخت‌های قبلی عضویت",
+
+      month: "ماه",
+      date: "تاریخ",
+      amount: "مبلغ",
+      status: "وضعیت",
+
+      loadingPayments: "در حال بارگذاری تاریخچه پرداخت‌ها...",
+      noPayments: "هنوز هیچ پرداختی ثبت نشده است",
+      paidStatus: "پرداخت شده",
+
+      recordNewPayment: "ثبت پرداخت جدید",
+    },
   },
 
   // =========================================================
@@ -2108,6 +2302,99 @@ const translations = {
       somethingWentWrong: "ستاسو د غوښتنې د پروسس پر مهال ستونزه رامنځته شوه.",
     },
     installApp: "اپلیکیشن نصب کړئ",
+  },
+
+  fitnessInformation: "د فټنس معلومات",
+  fitnessInformationDescription: "د غړي فزیکي او د فټنس معلومات اضافه کړئ.",
+
+  age: "عمر",
+  agePlaceholder: "عمر ولیکئ",
+
+  height: "قد (cm)",
+  heightPlaceholder: "لکه 175",
+
+  weight: "وزن (kg)",
+  weightPlaceholder: "لکه 70",
+
+  exerciseType: "د تمرین ډول",
+  selectExerciseType: "د تمرین ډول وټاکئ",
+
+  dietNutrition: "خواړه / تغذیه",
+  dietPlaceholder: "لکه لوړ پروټین، کم بوره، سبزیجاتي خواړه...",
+
+  exerciseTypes: {
+    gym: "جم",
+    fitness: "فټنس",
+    personalTraining: "شخصي تمرین",
+    strengthTraining: "د ځواک تمرین",
+    cardio: "کاردیو",
+    weightLoss: "د وزن کمول",
+    bodybuilding: "بدن جوړونه",
+    other: "نور",
+  },
+
+  physicalFitnessInformation: "د دې غړي فزیکي او د فټنس معلومات",
+
+  years: "کاله",
+  notAdded: "نه دی اضافه شوی",
+  heightLabel: "قد",
+  weightLabel: "وزن",
+  exercise: "تمرین",
+
+  noDietInformation: "د خوړو معلومات نه دي اضافه شوي",
+
+  internalNotes: "داخلي یادښتونه",
+  internalNotesPlaceholder:
+    "د دې غړي په اړه شخصي یادښتونه، لکه موخې، خوښې، ځانګړې اړتیاوې یا نور مهم معلومات ولیکئ.",
+
+  unableToGetMember: "د غړي معلومات ترلاسه نه شول",
+  unableToGetPayments: "د تادیاتو معلومات ترلاسه نه شول",
+
+  memberDetailsPage: {
+    loading: "د غړي معلومات لوډېږي...",
+    memberNotFound: "غړی پیدا نه شو",
+    memberDetails: "د غړي معلومات",
+
+    call: "زنګ",
+    email: "ایمیل",
+
+    currentStatus: "اوسنی حالت",
+    paid: "تادیه شوی",
+    unpaid: "تادیه نه ده شوې",
+
+    monthlyFee: "میاشتنی فیس",
+    memberSince: "غړیتوب له",
+
+    fitnessInformation: "د فټنس معلومات",
+    physicalFitnessInformation: "د دې غړي فزیکي او د فټنس معلومات",
+
+    age: "عمر",
+    height: "قد",
+    weight: "وزن",
+    exercise: "تمرین",
+
+    years: "کاله",
+    notAdded: "نه دی اضافه شوی",
+
+    dietNutrition: "خواړه / تغذیه",
+    noDietInformation: "د خوړو معلومات نه دي اضافه شوي",
+
+    internalNotes: "داخلي یادښتونه",
+    noInternalNotes: "داخلي یادښتونه نه دي اضافه شوي",
+
+    paymentHistory: "د تادیاتو تاریخچه",
+    previousMembershipPayments: "د غړیتوب پخوانۍ تادیې",
+
+    month: "میاشت",
+    date: "نېټه",
+    amount: "مقدار",
+    status: "حالت",
+
+    loadingPayments: "د تادیاتو تاریخچه لوډېږي...",
+    noPayments: "تر اوسه هېڅ تادیه نه ده ثبت شوې",
+    paidStatus: "تادیه شوی",
+
+    recordNewPayment: "نوې تادیه ثبت کړئ",
   },
 };
 

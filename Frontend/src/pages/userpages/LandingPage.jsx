@@ -213,19 +213,24 @@ const LandingPage = () => {
   =================================================== */}
               {mobileMenuOpen && (
                 <div
-                  className="
-        absolute
-        right-0
-        top-12
-        z-50
-        w-60
-        rounded-xl
-        border
-        border-[#363636]
-        bg-[#171717]
-        p-2
-        shadow-2xl
-      "
+                  className={`
+      absolute
+      top-12
+      z-50
+      w-60
+      rounded-xl
+      border
+      border-[#363636]
+      bg-[#171717]
+      p-2
+      shadow-2xl
+
+      ${
+        language === "fa" || language === "ps"
+          ? "left-0 origin-top-left"
+          : "right-0 origin-top-right"
+      }
+    `}
                 >
                   {/* LANGUAGE */}
                   <div className="px-3 py-2">
