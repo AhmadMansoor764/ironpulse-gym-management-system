@@ -293,10 +293,7 @@ export const getMember = async (req, res) => {
   }
 };
 
-// =====================================================
 // UPDATE MEMBER
-// =====================================================
-
 export const updateMember = async (req, res) => {
   const { id } = req.params;
 
@@ -332,33 +329,10 @@ export const updateMember = async (req, res) => {
     // 2. REQUIRED FIELDS
     // =====================================================
 
-    if (!name?.trim()) {
+    if (!name?.trim() || !phone?.trim() || !monthlyFee) {
       return res.status(400).json({
         success: false,
-        message: "Name is required",
-      });
-    }
-
-    if (!phone?.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: "Phone is required",
-      });
-    }
-
-    if (monthlyFee === undefined || monthlyFee === null || monthlyFee === "") {
-      return res.status(400).json({
-        success: false,
-        message: "Monthly fee is required",
-      });
-    }
-
-    const parsedMonthlyFee = Number(monthlyFee);
-
-    if (!Number.isFinite(parsedMonthlyFee) || parsedMonthlyFee < 0) {
-      return res.status(400).json({
-        success: false,
-        message: "Monthly fee must be a valid number",
+        message: "name, phone, and monthlyFee are required",
       });
     }
 
@@ -366,10 +340,8 @@ export const updateMember = async (req, res) => {
     // 3. VALIDATE AGE
     // =====================================================
 
-    let parsedAge = null;
-
     if (age !== undefined && age !== null && age !== "") {
-      parsedAge = Number(age);
+      const parsedAge = Number(age);
 
       if (!Number.isInteger(parsedAge) || parsedAge < 1 || parsedAge > 120) {
         return res.status(400).json({
@@ -383,10 +355,8 @@ export const updateMember = async (req, res) => {
     // 4. VALIDATE HEIGHT
     // =====================================================
 
-    let parsedHeight = null;
-
     if (height !== undefined && height !== null && height !== "") {
-      parsedHeight = Number(height);
+      const parsedHeight = Number(height);
 
       if (!Number.isFinite(parsedHeight) || parsedHeight <= 0) {
         return res.status(400).json({
@@ -400,10 +370,8 @@ export const updateMember = async (req, res) => {
     // 5. VALIDATE WEIGHT
     // =====================================================
 
-    let parsedWeight = null;
-
     if (weight !== undefined && weight !== null && weight !== "") {
-      parsedWeight = Number(weight);
+      const parsedWeight = Number(weight);
 
       if (!Number.isFinite(parsedWeight) || parsedWeight <= 0) {
         return res.status(400).json({
@@ -432,28 +400,62 @@ export const updateMember = async (req, res) => {
     }
 
     // =====================================================
-    // 7. PREPARE IMAGE
+    // 7. PREPARE UPDATE DATA
     // =====================================================
 
-    let imageUrl = existingMember.image;
+    const updateData = {
+      name: name.trim(),
+
+      phone: phone.trim(),
+
+      email: email?.trim() || null,
+
+      monthlyFee: Number(monthlyFee),
+
+      startDate: startDate ? new Date(startDate) : existingMember.startDate,
+
+      internalNotes: internalNotes?.trim() || null,
+
+      age: age !== undefined && age !== null && age !== "" ? Number(age) : null,
+
+      height:
+        height !== undefined && height !== null && height !== ""
+          ? Number(height)
+          : null,
+
+      weight:
+        weight !== undefined && weight !== null && weight !== ""
+          ? Number(weight)
+          : null,
+
+      diet: diet?.trim() || null,
+
+      exerciseType: exerciseType?.trim() || null,
+    };
 
     // =====================================================
-    // 8. UPLOAD NEW IMAGE IF PROVIDED
+    // 8. IF NEW IMAGE EXISTS
     // =====================================================
 
     if (req.file) {
       console.log("📸 New member image detected");
 
       console.log("📁 File:", req.file.originalname);
+
       console.log("📦 Size:", req.file.size);
-      console.log("📝 MIME:", req.file.mimetype);
+
+      console.log("📝 Type:", req.file.mimetype);
 
       const extension =
         req.file.originalname.split(".").pop()?.toLowerCase() || "jpg";
 
       const fileName = `member-${memberId}-${randomUUID()}.${extension}`;
 
-      console.log("📤 Uploading:", fileName);
+      console.log("📤 Uploading new image:", fileName);
+
+      // ---------------------------------------------------
+      // UPLOAD NEW IMAGE TO SUPABASE
+      // ---------------------------------------------------
 
       const { error: uploadError } = await supabase.storage
         .from("gym-profile-image")
@@ -474,56 +476,68 @@ export const updateMember = async (req, res) => {
 
       console.log("✅ New image uploaded");
 
+      // ---------------------------------------------------
+      // GET PUBLIC URL
+      // ---------------------------------------------------
+
       const { data: publicUrlData } = supabase.storage
         .from("gym-profile-image")
         .getPublicUrl(fileName);
 
-      imageUrl = publicUrlData.publicUrl;
+      const imageUrl = publicUrlData.publicUrl;
 
       console.log("🌐 New image URL:", imageUrl);
 
-      // =====================================================
-      // DELETE OLD IMAGE
-      // =====================================================
+      // Add image to database update
+      updateData.image = imageUrl;
+
+      // ---------------------------------------------------
+      // DELETE OLD IMAGE FROM SUPABASE
+      // ---------------------------------------------------
 
       if (existingMember.image) {
         try {
-          const bucketName = "gym-profile-image";
+          const oldImageUrl = new URL(existingMember.image);
 
-          const oldImageUrl = existingMember.image;
+          const bucketPath = "/storage/v1/object/public/gym-profile-image/";
 
-          const marker = `${bucketName}/`;
+          const pathname = oldImageUrl.pathname;
 
-          const markerIndex = oldImageUrl.indexOf(marker);
+          const bucketIndex = pathname.indexOf(bucketPath);
 
-          if (markerIndex !== -1) {
-            const oldFilePath = oldImageUrl.substring(
-              markerIndex + marker.length,
-            );
+          if (bucketIndex !== -1) {
+            const oldFileName = pathname
+              .substring(bucketIndex + bucketPath.length)
+              .split("?")[0];
 
-            console.log("🗑️ Old image path:", oldFilePath);
+            if (oldFileName) {
+              console.log("🗑️ Deleting old image:", oldFileName);
 
-            const { error: deleteError } = await supabase.storage
-              .from(bucketName)
-              .remove([oldFilePath]);
+              const { error: deleteError } = await supabase.storage
+                .from("gym-profile-image")
+                .remove([oldFileName]);
 
-            if (deleteError) {
-              console.error(
-                "⚠️ Could not delete old image:",
-                deleteError.message,
-              );
-            } else {
-              console.log("✅ Old image deleted");
+              if (deleteError) {
+                console.error(
+                  "⚠️ Could not delete old image:",
+                  deleteError.message,
+                );
+              } else {
+                console.log("✅ Old image deleted");
+              }
             }
           }
-        } catch (deleteError) {
-          console.error("⚠️ Old image deletion error:", deleteError);
+        } catch (imageError) {
+          console.error("⚠️ Error processing old image:", imageError);
+
+          // We DON'T fail the entire member update
+          // just because old image deletion failed.
         }
       }
     }
 
     // =====================================================
-    // 9. UPDATE MEMBER
+    // 9. UPDATE MEMBER IN DATABASE
     // =====================================================
 
     const updatedMember = await prisma.member.update({
@@ -531,31 +545,7 @@ export const updateMember = async (req, res) => {
         id: memberId,
       },
 
-      data: {
-        name: name.trim(),
-
-        phone: phone.trim(),
-
-        email: email?.trim() || null,
-
-        monthlyFee: parsedMonthlyFee,
-
-        startDate: startDate ? new Date(startDate) : existingMember.startDate,
-
-        internalNotes: internalNotes?.trim() || null,
-
-        age: parsedAge,
-
-        height: parsedHeight,
-
-        weight: parsedWeight,
-
-        diet: diet?.trim() || null,
-
-        exerciseType: exerciseType?.trim() || null,
-
-        image: imageUrl,
-      },
+      data: updateData,
     });
 
     // =====================================================
@@ -568,7 +558,7 @@ export const updateMember = async (req, res) => {
       member: updatedMember,
     });
   } catch (error) {
-    console.error("❌ Update member error:", error);
+    console.error("Update member error:", error);
 
     // Prisma unique constraint
     if (error.code === "P2002") {
