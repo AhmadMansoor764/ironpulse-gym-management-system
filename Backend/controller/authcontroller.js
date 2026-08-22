@@ -2,6 +2,9 @@ import prisma from "../config/prisma.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import resend from "../config/resend.js";
+import { OAuth2Client } from "google-auth-library";
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export const register = async (req, res) => {
   const { name, password, email } = req.body;
@@ -88,6 +91,13 @@ export const login = async (req, res) => {
       });
     }
 
+    if (!user.password) {
+      return res.status(400).json({
+        success: false,
+        message: "This account uses Google login. Please continue with Google.",
+      });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
@@ -96,7 +106,6 @@ export const login = async (req, res) => {
         message: "Invalid credentials",
       });
     }
-
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
       expiresIn: "1d",
     });
@@ -117,6 +126,92 @@ export const login = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Something went wrong",
+    });
+  }
+};
+
+export const googleLogin = async (req, res) => {
+  try {
+    const { credential } = req.body;
+
+    if (!credential) {
+      return res.status(400).json({
+        success: false,
+        message: "Google credential is required",
+      });
+    }
+
+    // Verify Google's ID token
+    const ticket = await googleClient.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+
+    const { sub: googleId, email, name, picture, email_verified } = payload;
+
+    if (!email || !email_verified) {
+      return res.status(400).json({
+        success: false,
+        message: "Google email could not be verified",
+      });
+    }
+
+    // Check if trainer already exists
+    let user = await prisma.trainer.findUnique({
+      where: {
+        email: email,
+      },
+    });
+
+    // Existing account
+    if (!user) {
+      user = await prisma.trainer.create({
+        data: {
+          name: name || "Google User",
+          email: email,
+          image: picture || null,
+          password: null,
+        },
+      });
+    }
+
+    // Create your normal JWT
+    const token = jwt.sign(
+      {
+        id: user.id,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1d",
+      },
+    );
+
+    // Store JWT in your existing cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(200).json({
+      success: true,
+      message: "Google login successful",
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        image: user.image,
+      },
+    });
+  } catch (error) {
+    console.error("Google login error:", error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Google login failed",
     });
   }
 };
